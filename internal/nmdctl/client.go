@@ -1,0 +1,39 @@
+package nmdctl
+
+import (
+	"encoding/json"
+	"fmt"
+	"os/exec"
+)
+
+// Client handles interactions with nmdctl
+type Client struct {
+	command string
+}
+
+// NewClient creates a new nmdctl client
+func NewClient() *Client {
+	return &Client{
+		command: "nmdctl",
+	}
+}
+
+// GetStatus executes nmdctl status -o json and returns the parsed result
+func (c *Client) GetStatus() (*Status, error) {
+	cmd := exec.Command(c.command, "status", "-o", "json")
+
+	output, err := cmd.Output()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			return nil, fmt.Errorf("nmdctl failed: %s - stderr: %s", err, string(exitErr.Stderr))
+		}
+		return nil, fmt.Errorf("failed to execute nmdctl: %w", err)
+	}
+
+	var status Status
+	if err := json.Unmarshal(output, &status); err != nil {
+		return nil, fmt.Errorf("failed to parse nmdctl output: %w", err)
+	}
+
+	return &status, nil
+}

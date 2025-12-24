@@ -1,0 +1,35 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+/nonraid-ui
+
+# Frontend
+/frontend/node_modules
+/frontend/.svelte-kit
+/frontend/build
+/frontend/.env
+/frontend/.env.*
+/frontend/package-lock.json
+/frontend/pnpm-lock.yaml
+/frontend/yarn.lock
+
+# Build artifacts
+/dist
+/embed
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

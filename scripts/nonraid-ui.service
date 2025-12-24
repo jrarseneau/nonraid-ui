@@ -1,0 +1,24 @@
+[Unit]
+Description=nonraid WebUI
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/nonraid-ui --host 0.0.0.0 --port 3000
+Restart=on-failure
+RestartSec=5s
+
+# Security hardening
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+NoNewPrivileges=true
+
+# Allow access to /dev for disk operations
+DevicePolicy=closed
+DeviceAllow=/dev/sd* rw
+DeviceAllow=/dev/nvme* rw
+
+[Install]
+WantedBy=multi-user.target
