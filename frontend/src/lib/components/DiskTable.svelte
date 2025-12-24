@@ -4,8 +4,24 @@
 
 	export let disks: Disk[];
 
-	// Sort disks by slot number
-	$: sortedDisks = [...disks].sort((a, b) => a.slot - b.slot);
+	// Helper to get display slot (P, Q, or slot number)
+	function getDisplaySlot(disk: Disk): string {
+		if (disk.type === 'P') return 'P';
+		if (disk.type === 'Q') return 'Q';
+		return disk.slot.toString();
+	}
+
+	// Sort disks: parity disks (P, Q) first, then data disks by slot number
+	$: sortedDisks = [...disks].sort((a, b) => {
+		// P parity always first
+		if (a.type === 'P') return -1;
+		if (b.type === 'P') return 1;
+		// Q parity second
+		if (a.type === 'Q') return -1;
+		if (b.type === 'Q') return 1;
+		// Then sort data disks by slot number
+		return a.slot - b.slot;
+	});
 </script>
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
@@ -51,7 +67,7 @@
 					<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
 						<td class="px-6 py-4 whitespace-nowrap">
 							<div class="text-sm font-medium text-gray-900 dark:text-white">
-								{disk.slot}
+								{getDisplaySlot(disk)}
 							</div>
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">

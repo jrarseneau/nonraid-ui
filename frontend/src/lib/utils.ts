@@ -1,8 +1,14 @@
-export function formatBytes(gb: number): string {
-	if (gb >= 1000) {
-		return `${(gb / 1000).toFixed(2)} TB`;
+export function formatBytes(gib: number): string {
+	// Input is in GiB (despite field name "size_gb")
+	// Convert GiB to TB (decimal, like drive manufacturers use)
+	// GiB * 1024^3 / 10^12 = GiB * 1.073741824
+	const tb = gib * 1.073741824;
+
+	if (tb >= 1) {
+		// Round to nearest whole TB for cleaner display
+		return `${Math.round(tb)} TB`;
 	}
-	return `${gb.toFixed(0)} GB`;
+	return `${gib.toFixed(0)} GB`;
 }
 
 export function formatDuration(seconds: number): string {
