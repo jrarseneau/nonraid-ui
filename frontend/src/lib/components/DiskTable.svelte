@@ -31,6 +31,22 @@
 		return parseInt(disk.filesystem.usage);
 	}
 
+	// Get gauge color based on usage level
+	// Normal: <=90% (green), Warning: 90-95% (yellow), Critical: >95% (red)
+	function getGaugeColor(disk: Disk): string {
+		const usage = getUsagePercent(disk);
+		if (usage > 95) {
+			// Critical: red
+			return 'bg-red-500 dark:bg-red-600';
+		} else if (usage > 90) {
+			// Warning: yellow
+			return 'bg-yellow-500 dark:bg-yellow-600';
+		} else {
+			// Normal: green
+			return 'bg-green-500 dark:bg-green-600';
+		}
+	}
+
 	// Separate parity and data disks
 	$: parityDisks = disks.filter(d => d.type === 'P' || d.type === 'Q').sort((a, b) => {
 		if (a.type === 'P') return -1;
@@ -175,7 +191,7 @@
 							{#if disk.filesystem?.usage}
 								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
 									<div
-										class="absolute inset-0 bg-blue-500 dark:bg-blue-600 transition-all"
+										class="absolute inset-0 {getGaugeColor(disk)} transition-all"
 										style="width: {getUsagePercent(disk)}%"
 									></div>
 									<div class="absolute inset-0 flex items-center justify-center">
@@ -193,7 +209,7 @@
 							{#if disk.filesystem?.usage}
 								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
 									<div
-										class="absolute inset-0 bg-green-500 dark:bg-green-600 transition-all"
+										class="absolute inset-0 {getGaugeColor(disk)} transition-all"
 										style="width: {100 - getUsagePercent(disk)}%"
 									></div>
 									<div class="absolute inset-0 flex items-center justify-center">
