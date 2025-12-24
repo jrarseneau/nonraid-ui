@@ -32,13 +32,13 @@
 	}
 
 	// Get gauge color based on usage level
-	// Normal: <=90% (green), Warning: 90-95% (yellow), Critical: >95% (red)
+	// Normal: <=94% (green), Warning: 95-97% (yellow), Critical: >=98% (red)
 	function getGaugeColor(disk: Disk): string {
 		const usage = getUsagePercent(disk);
-		if (usage > 95) {
+		if (usage >= 98) {
 			// Critical: red
 			return 'bg-red-500 dark:bg-red-600';
-		} else if (usage > 90) {
+		} else if (usage >= 95) {
 			// Warning: yellow
 			return 'bg-yellow-500 dark:bg-yellow-600';
 		} else {
