@@ -5,12 +5,16 @@ echo "=== Building nonraid-ui ==="
 
 # Build frontend
 echo ""
-echo "Step 1/3: Installing frontend dependencies..."
+echo "Step 1/4: Installing frontend dependencies..."
 cd frontend
 npm install
 
 echo ""
-echo "Step 2/3: Building frontend..."
+echo "Step 2/4: Running svelte-kit sync..."
+npx svelte-kit sync
+
+echo ""
+echo "Step 3/4: Building frontend..."
 npm run build
 
 # Copy frontend build to Go embed location
@@ -22,7 +26,7 @@ cp -r frontend/dist/* internal/api/frontend/dist/
 
 # Build Go backend
 echo ""
-echo "Step 3/3: Building Go backend with embedded frontend..."
+echo "Step 4/4: Building Go backend with embedded frontend..."
 go mod download
 CGO_ENABLED=0 go build -ldflags="-s -w" -o nonraid-ui ./cmd/server
 

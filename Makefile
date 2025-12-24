@@ -8,7 +8,11 @@ build: frontend backend
 # Build the frontend
 frontend:
 	@echo "Building frontend..."
-	cd frontend && npm install && npm run build
+	cd frontend && npm install
+	@echo "Running svelte-kit sync..."
+	cd frontend && npx svelte-kit sync
+	@echo "Building frontend assets..."
+	cd frontend && npm run build
 	@echo "Copying frontend build to internal/api/frontend/dist..."
 	@mkdir -p internal/api/frontend/dist
 	@cp -r frontend/dist/* internal/api/frontend/dist/
