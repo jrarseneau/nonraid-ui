@@ -116,48 +116,13 @@
 								{formatBytes(disk.size_gb)}
 							</div>
 						</td>
-						<!-- Used column with fuel gauge -->
+						<!-- Used column - parity disks don't store data -->
 						<td class="px-6 py-4 whitespace-nowrap">
-							{#if disk.filesystem?.usage}
-								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
-									<div
-										class="absolute inset-0 bg-blue-500 dark:bg-blue-600 transition-all"
-										style="width: {getUsagePercent(disk)}%"
-									></div>
-									<div class="absolute inset-0 flex items-center justify-center">
-										<span class="text-xs font-semibold text-white drop-shadow-md">
-											{formatBytesDetailed(getUsedSpace(disk))}
-										</span>
-									</div>
-								</div>
-							{:else}
-								<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
-							{/if}
+							<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
 						</td>
-						<!-- Free column with fuel gauge -->
+						<!-- Free column - parity disks don't store data -->
 						<td class="px-6 py-4 whitespace-nowrap">
-							{#if disk.filesystem?.usage}
-								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
-									<div
-										class="absolute inset-0 bg-green-500 dark:bg-green-600 transition-all"
-										style="width: {100 - getUsagePercent(disk)}%"
-									></div>
-									<div class="absolute inset-0 flex items-center justify-center">
-										<span class="text-xs font-semibold text-white drop-shadow-md">
-											{formatBytesDetailed(getFreeSpace(disk))}
-										</span>
-									</div>
-								</div>
-							{:else}
-								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
-									<div class="absolute inset-0 bg-green-500 dark:bg-green-600"></div>
-									<div class="absolute inset-0 flex items-center justify-center">
-										<span class="text-xs font-semibold text-white drop-shadow-md">
-											{formatBytesDetailed(disk.size_gb)}
-										</span>
-									</div>
-								</div>
-							{/if}
+							<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
 						</td>
 					</tr>
 					{/each}

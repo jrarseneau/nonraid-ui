@@ -94,7 +94,7 @@
 			</div>
 		</div>
 
-		<ArrayStatus array={status.array} />
+		<ArrayStatus array={status.array} disks={status.disks} />
 
 		{#if status.resync?.active}
 			<ResyncProgress resync={status.resync} />

@@ -1,8 +1,18 @@
 <script lang="ts">
-	import type { Array } from '../types';
+	import type { Array, Disk } from '../types';
 	import { getHealthColor, formatBytes } from '../utils';
 
 	export let array: Array;
+	export let disks: Disk[];
+
+	// Calculate total free space across all data disks
+	$: totalFreeGb = disks
+		.filter(d => d.type === 'data' && d.filesystem?.usage)
+		.reduce((total, disk) => {
+			const usagePercent = parseInt(disk.filesystem!.usage);
+			const freeSpace = (disk.size_gb * (100 - usagePercent)) / 100;
+			return total + freeSpace;
+		}, 0);
 </script>
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
@@ -21,7 +31,7 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
 		<div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
 			<div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Health Status</div>
 			<div class="text-2xl font-bold {getHealthColor(array.health.status)}">
@@ -39,6 +49,16 @@
 			</div>
 			<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
 				{array.size.data_disk_count} data disks
+			</div>
+		</div>
+
+		<div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+			<div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Free Capacity</div>
+			<div class="text-2xl font-bold text-green-600 dark:text-green-400">
+				{formatBytes(totalFreeGb)}
+			</div>
+			<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+				Available space
 			</div>
 		</div>
 
