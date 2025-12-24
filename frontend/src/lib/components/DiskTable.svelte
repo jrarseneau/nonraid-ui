@@ -54,19 +54,13 @@
 						Slot
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-						Device
-					</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-						Name
+						Disk ID
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Status
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Filesystem
-					</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-						Disk ID
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Size
@@ -80,12 +74,12 @@
 				</tr>
 			</thead>
 			<tbody>
-				<!-- Parity Disks Section -->
+				<!-- Parity Section -->
 				{#if parityDisks.length > 0}
 					<tr class="bg-gray-100 dark:bg-gray-700">
-						<td colspan="9" class="px-6 py-2">
+						<td colspan="7" class="px-6 py-2">
 							<div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-								Parity Disks
+								Parity
 							</div>
 						</td>
 					</tr>
@@ -96,14 +90,9 @@
 								{getDisplaySlot(disk)}
 							</div>
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
-							<div class="text-sm text-gray-900 dark:text-white font-mono">
-								{disk.device}
-							</div>
-						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
-							<div class="text-sm text-gray-900 dark:text-white">
-								{disk.disk_name || '-'}
+						<td class="px-6 py-4">
+							<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
+								{disk.disk_id}
 							</div>
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
@@ -120,11 +109,6 @@
 									{disk.filesystem.mountpoint}
 								</div>
 							{/if}
-						</td>
-						<td class="px-6 py-4">
-							<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
-								{disk.disk_id}
-							</div>
 						</td>
 						<!-- Size column -->
 						<td class="px-6 py-4 whitespace-nowrap">
@@ -179,12 +163,12 @@
 					{/each}
 				{/if}
 
-				<!-- Data Disks Section -->
+				<!-- Data Section -->
 				{#if dataDisks.length > 0}
 					<tr class="bg-gray-100 dark:bg-gray-700">
-						<td colspan="9" class="px-6 py-2">
+						<td colspan="7" class="px-6 py-2">
 							<div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-								Data Disks
+								Data
 							</div>
 						</td>
 					</tr>
@@ -195,14 +179,9 @@
 								{getDisplaySlot(disk)}
 							</div>
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
-							<div class="text-sm text-gray-900 dark:text-white font-mono">
-								{disk.device}
-							</div>
-						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
-							<div class="text-sm text-gray-900 dark:text-white">
-								{disk.disk_name || '-'}
+						<td class="px-6 py-4">
+							<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
+								{disk.disk_id}
 							</div>
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
@@ -219,11 +198,6 @@
 									{disk.filesystem.mountpoint}
 								</div>
 							{/if}
-						</td>
-						<td class="px-6 py-4">
-							<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
-								{disk.disk_id}
-							</div>
 						</td>
 						<!-- Size column -->
 						<td class="px-6 py-4 whitespace-nowrap">
