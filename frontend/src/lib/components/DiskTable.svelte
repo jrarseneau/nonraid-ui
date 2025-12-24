@@ -11,6 +11,26 @@
 		return disk.slot.toString();
 	}
 
+	// Calculate used space in GiB
+	function getUsedSpace(disk: Disk): number {
+		if (!disk.filesystem?.usage) return 0;
+		const usagePercent = parseInt(disk.filesystem.usage);
+		return (disk.size_gb * usagePercent) / 100;
+	}
+
+	// Calculate free space in GiB
+	function getFreeSpace(disk: Disk): number {
+		if (!disk.filesystem?.usage) return disk.size_gb;
+		const usagePercent = parseInt(disk.filesystem.usage);
+		return (disk.size_gb * (100 - usagePercent)) / 100;
+	}
+
+	// Get usage percentage as number
+	function getUsagePercent(disk: Disk): number {
+		if (!disk.filesystem?.usage) return 0;
+		return parseInt(disk.filesystem.usage);
+	}
+
 	// Sort disks: parity disks (P, Q) first, then data disks by slot number
 	$: sortedDisks = [...disks].sort((a, b) => {
 		// P parity always first
@@ -46,19 +66,22 @@
 						Name
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-						Size
-					</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Status
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Filesystem
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-						Usage
+						Disk ID
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-						Disk ID
+						Size
+					</th>
+					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+						Used
+					</th>
+					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+						Free
 					</th>
 				</tr>
 			</thead>
@@ -86,11 +109,6 @@
 							</div>
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
-							<div class="text-sm text-gray-900 dark:text-white">
-								{formatBytes(disk.size_gb)}
-							</div>
-						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
 							<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {getDiskStatusColor(disk.status)}">
 								{disk.status.replace('DISK_', '')}
 							</span>
@@ -105,16 +123,28 @@
 								</div>
 							{/if}
 						</td>
+						<td class="px-6 py-4">
+							<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
+								{disk.disk_id}
+							</div>
+						</td>
+						<!-- Size column -->
+						<td class="px-6 py-4 whitespace-nowrap">
+							<div class="text-sm text-gray-900 dark:text-white">
+								{formatBytes(disk.size_gb)}
+							</div>
+						</td>
+						<!-- Used column with fuel gauge -->
 						<td class="px-6 py-4 whitespace-nowrap">
 							{#if disk.filesystem?.usage}
-								<div class="flex items-center">
-									<div class="text-sm font-medium text-gray-900 dark:text-white mr-2">
-										{disk.filesystem.usage}
+								<div class="flex items-center gap-3">
+									<div class="text-sm font-medium text-gray-900 dark:text-white min-w-[60px]">
+										{formatBytes(getUsedSpace(disk))}
 									</div>
-									<div class="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+									<div class="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
 										<div
-											class="bg-blue-600 dark:bg-blue-500 rounded-full h-2"
-											style="width: {disk.filesystem.usage}"
+											class="bg-blue-600 dark:bg-blue-500 rounded-full h-2.5 transition-all"
+											style="width: {getUsagePercent(disk)}%"
 										></div>
 									</div>
 								</div>
@@ -122,10 +152,25 @@
 								<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
 							{/if}
 						</td>
-						<td class="px-6 py-4">
-							<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
-								{disk.disk_id}
-							</div>
+						<!-- Free column with fuel gauge -->
+						<td class="px-6 py-4 whitespace-nowrap">
+							{#if disk.filesystem?.usage}
+								<div class="flex items-center gap-3">
+									<div class="text-sm font-medium text-gray-900 dark:text-white min-w-[60px]">
+										{formatBytes(getFreeSpace(disk))}
+									</div>
+									<div class="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
+										<div
+											class="bg-green-600 dark:bg-green-500 rounded-full h-2.5 transition-all"
+											style="width: {100 - getUsagePercent(disk)}%"
+										></div>
+									</div>
+								</div>
+							{:else}
+								<div class="text-sm font-medium text-gray-900 dark:text-white">
+									{formatBytes(disk.size_gb)}
+								</div>
+							{/if}
 						</td>
 					</tr>
 				{/each}
