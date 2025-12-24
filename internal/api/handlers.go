@@ -3,6 +3,7 @@ package api
 import (
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"log"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
+	"github.com/jrarseneau/nonraid-ui/internal/notifications"
 	"github.com/jrarseneau/nonraid-ui/internal/settings"
 )
 
@@ -18,17 +20,19 @@ var frontendFS embed.FS
 
 // Server represents the API server
 type Server struct {
-	client   *nmdctl.Client
-	settings *settings.Manager
-	router   *mux.Router
+	client        *nmdctl.Client
+	settings      *settings.Manager
+	notifications *notifications.Manager
+	router        *mux.Router
 }
 
 // NewServer creates a new API server
-func NewServer(client *nmdctl.Client, settingsMgr *settings.Manager) *Server {
+func NewServer(client *nmdctl.Client, settingsMgr *settings.Manager, notifMgr *notifications.Manager) *Server {
 	s := &Server{
-		client:   client,
-		settings: settingsMgr,
-		router:   mux.NewRouter(),
+		client:        client,
+		settings:      settingsMgr,
+		notifications: notifMgr,
+		router:        mux.NewRouter(),
 	}
 	s.setupRoutes()
 	return s
@@ -40,6 +44,8 @@ func (s *Server) setupRoutes() {
 	api.HandleFunc("/status", s.handleStatus).Methods("GET")
 	api.HandleFunc("/settings", s.handleGetSettings).Methods("GET")
 	api.HandleFunc("/settings", s.handleUpdateSettings).Methods("PUT")
+	api.HandleFunc("/notifications/test/email", s.handleTestEmail).Methods("POST")
+	api.HandleFunc("/notifications/test/discord", s.handleTestDiscord).Methods("POST")
 
 	// Serve embedded frontend
 	frontendSubFS, err := fs.Sub(frontendFS, "frontend/dist")
@@ -109,4 +115,57 @@ func (s *Server) handleUpdateSettings(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error encoding settings: %v", err)
 		http.Error(w, "Failed to encode settings", http.StatusInternalServerError)
 	}
+}
+
+func (s *Server) handleTestEmail(w http.ResponseWriter, r *http.Request) {
+	// Limit request body to 1MB
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	defer r.Body.Close()
+
+	// Parse request body
+	var req struct {
+		Config   settings.EmailConfig `json:"config"`
+		Password string                `json:"password"` // Plaintext password for testing
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Test email
+	if err := s.notifications.TestEmail(req.Config, req.Password); err != nil {
+		log.Printf("Email test failed: %v", err)
+		http.Error(w, fmt.Sprintf("Email test failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Test email sent successfully"})
+}
+
+func (s *Server) handleTestDiscord(w http.ResponseWriter, r *http.Request) {
+	// Limit request body to 1MB
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	defer r.Body.Close()
+
+	// Parse request body
+	var req struct {
+		WebhookURL string `json:"webhook_url"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Test Discord
+	if err := s.notifications.TestDiscord(req.WebhookURL); err != nil {
+		log.Printf("Discord test failed: %v", err)
+		http.Error(w, fmt.Sprintf("Discord test failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Test Discord notification sent successfully"})
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/jrarseneau/nonraid-ui/internal/api"
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
+	"github.com/jrarseneau/nonraid-ui/internal/notifications"
 	"github.com/jrarseneau/nonraid-ui/internal/settings"
 )
 
@@ -34,8 +35,15 @@ func main() {
 	}
 	log.Printf("Settings loaded from: %s", settings.DefaultSettingsPath)
 
+	// Create and start notification manager
+	notifMgr := notifications.NewManager(client, settingsMgr)
+	if err := notifMgr.Start(); err != nil {
+		log.Fatalf("Failed to start notification manager: %v", err)
+	}
+	defer notifMgr.Stop()
+
 	// Create API server
-	server := api.NewServer(client, settingsMgr)
+	server := api.NewServer(client, settingsMgr, notifMgr)
 
 	// Configure HTTP server
 	addr := *host + ":" + *port

@@ -7,6 +7,29 @@ export interface Settings {
 		warning_pct: number;
 		critical_pct: number;
 	};
+	notifications: {
+		enabled: boolean;
+		events: {
+			array_health: boolean;
+			disk_warning: boolean;
+			disk_critical: boolean;
+			disk_status_not_ok: boolean;
+		};
+		frequency: 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
+		email: {
+			enabled: boolean;
+			smtp_server: string;
+			smtp_port: number;
+			username: string;
+			password_md5: string;
+			from_address: string;
+			to_address: string;
+		};
+		discord: {
+			enabled: boolean;
+			webhook_url: string;
+		};
+	};
 }
 
 const defaultSettings: Settings = {
@@ -14,6 +37,29 @@ const defaultSettings: Settings = {
 	thresholds: {
 		warning_pct: 95,
 		critical_pct: 98
+	},
+	notifications: {
+		enabled: false,
+		events: {
+			array_health: false,
+			disk_warning: false,
+			disk_critical: false,
+			disk_status_not_ok: false
+		},
+		frequency: 'once',
+		email: {
+			enabled: false,
+			smtp_server: '',
+			smtp_port: 587,
+			username: '',
+			password_md5: '',
+			from_address: '',
+			to_address: ''
+		},
+		discord: {
+			enabled: false,
+			webhook_url: ''
+		}
 	}
 };
 

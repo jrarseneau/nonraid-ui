@@ -17,14 +17,49 @@ const (
 
 // Settings represents the application configuration
 type Settings struct {
-	Appearance string     `json:"appearance"` // "light", "dark", or "auto"
-	Thresholds Thresholds `json:"thresholds"`
+	Appearance    string        `json:"appearance"` // "light", "dark", or "auto"
+	Thresholds    Thresholds    `json:"thresholds"`
+	Notifications Notifications `json:"notifications"`
 }
 
 // Thresholds defines disk usage warning levels
 type Thresholds struct {
 	WarningPct  int `json:"warning_pct"`  // Warning threshold percentage (e.g., 95)
 	CriticalPct int `json:"critical_pct"` // Critical threshold percentage (e.g., 98)
+}
+
+// Notifications defines notification settings
+type Notifications struct {
+	Enabled   bool              `json:"enabled"`
+	Events    NotificationEvent `json:"events"`
+	Frequency string            `json:"frequency"` // "once", "15m", "30m", "1h", "3h", "6h", "12h", "24h"
+	Email     EmailConfig       `json:"email"`
+	Discord   DiscordConfig     `json:"discord"`
+}
+
+// NotificationEvent defines which events trigger notifications
+type NotificationEvent struct {
+	ArrayHealth      bool `json:"array_health"`       // Array not healthy
+	DiskWarning      bool `json:"disk_warning"`       // Disk usage >= warning threshold
+	DiskCritical     bool `json:"disk_critical"`      // Disk usage >= critical threshold
+	DiskStatusNotOK  bool `json:"disk_status_not_ok"` // Disk status != OK
+}
+
+// EmailConfig defines email notification settings
+type EmailConfig struct {
+	Enabled     bool   `json:"enabled"`
+	SMTPServer  string `json:"smtp_server"`
+	SMTPPort    int    `json:"smtp_port"`
+	Username    string `json:"username"`
+	PasswordMD5 string `json:"password_md5"` // MD5 hashed password
+	FromAddress string `json:"from_address"`
+	ToAddress   string `json:"to_address"`
+}
+
+// DiscordConfig defines Discord webhook notification settings
+type DiscordConfig struct {
+	Enabled    bool   `json:"enabled"`
+	WebhookURL string `json:"webhook_url"`
 }
 
 // Manager handles settings persistence
@@ -52,6 +87,18 @@ func GetDefaults() Settings {
 		Thresholds: Thresholds{
 			WarningPct:  DefaultWarningPct,
 			CriticalPct: DefaultCriticalPct,
+		},
+		Notifications: Notifications{
+			Enabled:   false,
+			Events:    NotificationEvent{},
+			Frequency: "once",
+			Email: EmailConfig{
+				Enabled:  false,
+				SMTPPort: 587,
+			},
+			Discord: DiscordConfig{
+				Enabled: false,
+			},
 		},
 	}
 }
@@ -154,5 +201,19 @@ func (m *Manager) validateAndFixUnsafe() {
 	if m.settings.Thresholds.WarningPct >= m.settings.Thresholds.CriticalPct {
 		m.settings.Thresholds.WarningPct = DefaultWarningPct
 		m.settings.Thresholds.CriticalPct = DefaultCriticalPct
+	}
+
+	// Validate notification frequency
+	validFrequencies := map[string]bool{
+		"once": true, "15m": true, "30m": true, "1h": true,
+		"3h": true, "6h": true, "12h": true, "24h": true,
+	}
+	if !validFrequencies[m.settings.Notifications.Frequency] {
+		m.settings.Notifications.Frequency = "once"
+	}
+
+	// Validate email port
+	if m.settings.Notifications.Email.SMTPPort < 1 || m.settings.Notifications.Email.SMTPPort > 65535 {
+		m.settings.Notifications.Email.SMTPPort = 587
 	}
 }

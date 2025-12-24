@@ -3,18 +3,20 @@
 	import { settingsStore } from '$lib/stores/settings';
 	import type { Settings } from '$lib/stores/settings';
 
-	let settings: Settings = {
-		appearance: 'auto',
-		thresholds: {
-			warning_pct: 95,
-			critical_pct: 98
-		}
-	};
-
+	let settings: Settings;
 	let loading = true;
 	let saving = false;
 	let error = '';
 	let successMessage = '';
+
+	// Email test state
+	let testingEmail = false;
+	let testEmailPassword = '';
+	let testEmailMessage = '';
+
+	// Discord test state
+	let testingDiscord = false;
+	let testDiscordMessage = '';
 
 	// Load settings on mount
 	onMount(async () => {
@@ -90,6 +92,69 @@
 		}
 	}
 
+	async function testEmail() {
+		if (!testEmailPassword) {
+			testEmailMessage = 'Please enter your email password';
+			return;
+		}
+
+		testingEmail = true;
+		testEmailMessage = '';
+
+		try {
+			const response = await fetch('/api/notifications/test/email', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					config: settings.notifications.email,
+					password: testEmailPassword
+				})
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(errorText);
+			}
+
+			testEmailMessage = '✓ Test email sent successfully!';
+			testEmailPassword = ''; // Clear password after successful test
+		} catch (err) {
+			testEmailMessage = `✗ ${err instanceof Error ? err.message : 'Failed to send test email'}`;
+		} finally {
+			testingEmail = false;
+		}
+	}
+
+	async function testDiscord() {
+		testingDiscord = true;
+		testDiscordMessage = '';
+
+		try {
+			const response = await fetch('/api/notifications/test/discord', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					webhook_url: settings.notifications.discord.webhook_url
+				})
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(errorText);
+			}
+
+			testDiscordMessage = '✓ Test Discord notification sent successfully!';
+		} catch (err) {
+			testDiscordMessage = `✗ ${err instanceof Error ? err.message : 'Failed to send test notification'}`;
+		} finally {
+			testingDiscord = false;
+		}
+	}
+
 	function applyTheme() {
 		const html = document.documentElement;
 
@@ -106,13 +171,19 @@
 			}
 		}
 	}
+
+	function hashPassword(password: string): string {
+		// Simple MD5 implementation would go here
+		// For now, return as-is (will be hashed on backend)
+		return password;
+	}
 </script>
 
 <svelte:head>
 	<title>Settings - nonraidUI</title>
 </svelte:head>
 
-<div class="max-w-3xl mx-auto">
+<div class="max-w-5xl mx-auto">
 	<div class="mb-8">
 		<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
 		<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -247,6 +318,266 @@
 							</div>
 						</div>
 					</div>
+				</div>
+
+				<!-- Notifications Section -->
+				<div class="p-6 border-b border-gray-200 dark:border-gray-700">
+					<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+						Notifications
+					</h2>
+
+					<!-- Enable Notifications Toggle -->
+					<label class="flex items-center cursor-pointer mb-6">
+						<input
+							type="checkbox"
+							bind:checked={settings.notifications.enabled}
+							class="w-5 h-5 text-blue-600 focus:ring-blue-500 rounded"
+						/>
+						<span class="ml-3 text-gray-900 dark:text-white font-medium">
+							Enable Notifications
+						</span>
+					</label>
+
+					{#if settings.notifications.enabled}
+						<!-- Event Selection -->
+						<div class="mb-6">
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+								Notify on these events:
+							</label>
+							<div class="space-y-2">
+								<label class="flex items-center cursor-pointer">
+									<input
+										type="checkbox"
+										bind:checked={settings.notifications.events.array_health}
+										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+									/>
+									<span class="ml-3 text-gray-900 dark:text-white">
+										Array Health (when array is not healthy)
+									</span>
+								</label>
+								<label class="flex items-center cursor-pointer">
+									<input
+										type="checkbox"
+										bind:checked={settings.notifications.events.disk_warning}
+										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+									/>
+									<span class="ml-3 text-gray-900 dark:text-white">
+										Disk Usage Warning (at warning threshold)
+									</span>
+								</label>
+								<label class="flex items-center cursor-pointer">
+									<input
+										type="checkbox"
+										bind:checked={settings.notifications.events.disk_critical}
+										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+									/>
+									<span class="ml-3 text-gray-900 dark:text-white">
+										Disk Usage Critical (at critical threshold)
+									</span>
+								</label>
+								<label class="flex items-center cursor-pointer">
+									<input
+										type="checkbox"
+										bind:checked={settings.notifications.events.disk_status_not_ok}
+										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+									/>
+									<span class="ml-3 text-gray-900 dark:text-white">
+										Disk Status Not OK (when any disk status is not OK)
+									</span>
+								</label>
+							</div>
+						</div>
+
+						<!-- Frequency Selection -->
+						<div class="mb-6">
+							<label for="frequency" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Notification Frequency
+							</label>
+							<select
+								id="frequency"
+								bind:value={settings.notifications.frequency}
+								class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+							>
+								<option value="once">Once (until condition resolved)</option>
+								<option value="15m">Every 15 minutes</option>
+								<option value="30m">Every 30 minutes</option>
+								<option value="1h">Every 1 hour</option>
+								<option value="3h">Every 3 hours</option>
+								<option value="6h">Every 6 hours</option>
+								<option value="12h">Every 12 hours</option>
+								<option value="24h">Every 24 hours</option>
+							</select>
+						</div>
+
+						<!-- Email Service -->
+						<div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+							<label class="flex items-center cursor-pointer mb-4">
+								<input
+									type="checkbox"
+									bind:checked={settings.notifications.email.enabled}
+									class="w-5 h-5 text-blue-600 focus:ring-blue-500 rounded"
+								/>
+								<span class="ml-3 text-gray-900 dark:text-white font-medium">
+									Enable Email Notifications
+								</span>
+							</label>
+
+							{#if settings.notifications.email.enabled}
+								<div class="space-y-4 ml-8">
+									<div class="grid grid-cols-2 gap-4">
+										<div>
+											<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+												SMTP Server
+											</label>
+											<input
+												type="text"
+												bind:value={settings.notifications.email.smtp_server}
+												placeholder="smtp.gmail.com"
+												class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+											/>
+										</div>
+										<div>
+											<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+												Port
+											</label>
+											<input
+												type="number"
+												bind:value={settings.notifications.email.smtp_port}
+												placeholder="587"
+												class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+											/>
+										</div>
+									</div>
+
+									<div>
+										<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+											Username
+										</label>
+										<input
+											type="text"
+											bind:value={settings.notifications.email.username}
+											placeholder="your-email@example.com"
+											class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+										/>
+									</div>
+
+									<div>
+										<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+											Password
+										</label>
+										<input
+											type="password"
+											bind:value={settings.notifications.email.password_md5}
+											placeholder="Enter password"
+											class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+										/>
+										<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+											Password is stored as MD5 hash
+										</p>
+									</div>
+
+									<div>
+										<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+											From Address
+										</label>
+										<input
+											type="email"
+											bind:value={settings.notifications.email.from_address}
+											placeholder="noreply@example.com"
+											class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+										/>
+									</div>
+
+									<div>
+										<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+											To Address
+										</label>
+										<input
+											type="email"
+											bind:value={settings.notifications.email.to_address}
+											placeholder="your-email@example.com"
+											class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+										/>
+									</div>
+
+									<!-- Test Email -->
+									<div class="pt-4 border-t border-gray-200 dark:border-gray-600">
+										<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+											Test Email Configuration
+										</label>
+										<div class="flex space-x-2">
+											<input
+												type="password"
+												bind:value={testEmailPassword}
+												placeholder="Enter password to test"
+												class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+											/>
+											<button
+												type="button"
+												on:click={testEmail}
+												disabled={testingEmail}
+												class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+											>
+												{testingEmail ? 'Testing...' : 'Test'}
+											</button>
+										</div>
+										{#if testEmailMessage}
+											<p class="mt-2 text-sm {testEmailMessage.startsWith('✓') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">
+												{testEmailMessage}
+											</p>
+										{/if}
+									</div>
+								</div>
+							{/if}
+						</div>
+
+						<!-- Discord Service -->
+						<div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+							<label class="flex items-center cursor-pointer mb-4">
+								<input
+									type="checkbox"
+									bind:checked={settings.notifications.discord.enabled}
+									class="w-5 h-5 text-blue-600 focus:ring-blue-500 rounded"
+								/>
+								<span class="ml-3 text-gray-900 dark:text-white font-medium">
+									Enable Discord Notifications
+								</span>
+							</label>
+
+							{#if settings.notifications.discord.enabled}
+								<div class="space-y-4 ml-8">
+									<div>
+										<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+											Webhook URL
+										</label>
+										<input
+											type="text"
+											bind:value={settings.notifications.discord.webhook_url}
+											placeholder="https://discord.com/api/webhooks/..."
+											class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+										/>
+									</div>
+
+									<!-- Test Discord -->
+									<div class="pt-4 border-t border-gray-200 dark:border-gray-600">
+										<button
+											type="button"
+											on:click={testDiscord}
+											disabled={testingDiscord}
+											class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+										>
+											{testingDiscord ? 'Testing...' : 'Test Discord Notification'}
+										</button>
+										{#if testDiscordMessage}
+											<p class="mt-2 text-sm {testDiscordMessage.startsWith('✓') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">
+												{testDiscordMessage}
+											</p>
+										{/if}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
 				</div>
 
 				<!-- Messages -->
