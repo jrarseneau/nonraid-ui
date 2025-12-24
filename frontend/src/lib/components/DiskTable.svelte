@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Disk } from '../types';
-	import { getDiskStatusColor, getDiskTypeLabel, formatBytes } from '../utils';
+	import { getDiskStatusColor, getDiskTypeLabel, formatBytes, formatBytesDetailed } from '../utils';
 
 	export let disks: Disk[];
 
@@ -137,15 +137,15 @@
 						<!-- Used column with fuel gauge -->
 						<td class="px-6 py-4 whitespace-nowrap">
 							{#if disk.filesystem?.usage}
-								<div class="flex items-center gap-3">
-									<div class="text-sm font-medium text-gray-900 dark:text-white min-w-[60px]">
-										{formatBytes(getUsedSpace(disk))}
-									</div>
-									<div class="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
-										<div
-											class="bg-blue-600 dark:bg-blue-500 rounded-full h-2.5 transition-all"
-											style="width: {getUsagePercent(disk)}%"
-										></div>
+								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+									<div
+										class="absolute inset-0 bg-blue-500 dark:bg-blue-600 transition-all"
+										style="width: {getUsagePercent(disk)}%"
+									></div>
+									<div class="absolute inset-0 flex items-center justify-center">
+										<span class="text-xs font-semibold text-white drop-shadow-md">
+											{formatBytesDetailed(getUsedSpace(disk))}
+										</span>
 									</div>
 								</div>
 							{:else}
@@ -155,20 +155,25 @@
 						<!-- Free column with fuel gauge -->
 						<td class="px-6 py-4 whitespace-nowrap">
 							{#if disk.filesystem?.usage}
-								<div class="flex items-center gap-3">
-									<div class="text-sm font-medium text-gray-900 dark:text-white min-w-[60px]">
-										{formatBytes(getFreeSpace(disk))}
-									</div>
-									<div class="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
-										<div
-											class="bg-green-600 dark:bg-green-500 rounded-full h-2.5 transition-all"
-											style="width: {100 - getUsagePercent(disk)}%"
-										></div>
+								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+									<div
+										class="absolute inset-0 bg-green-500 dark:bg-green-600 transition-all"
+										style="width: {100 - getUsagePercent(disk)}%"
+									></div>
+									<div class="absolute inset-0 flex items-center justify-center">
+										<span class="text-xs font-semibold text-white drop-shadow-md">
+											{formatBytesDetailed(getFreeSpace(disk))}
+										</span>
 									</div>
 								</div>
 							{:else}
-								<div class="text-sm font-medium text-gray-900 dark:text-white">
-									{formatBytes(disk.size_gb)}
+								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+									<div class="absolute inset-0 bg-green-500 dark:bg-green-600"></div>
+									<div class="absolute inset-0 flex items-center justify-center">
+										<span class="text-xs font-semibold text-white drop-shadow-md">
+											{formatBytesDetailed(disk.size_gb)}
+										</span>
+									</div>
 								</div>
 							{/if}
 						</td>

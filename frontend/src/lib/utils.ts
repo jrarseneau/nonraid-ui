@@ -11,6 +11,19 @@ export function formatBytes(gib: number): string {
 	return `${Math.round(gb)} GB`;
 }
 
+export function formatBytesDetailed(gib: number): string {
+	// Input is in GiB (despite field name "size_gb")
+	// Convert GiB to GB (decimal, like drive manufacturers use)
+	// 1 GiB = 1.073741824 GB
+	const gb = gib * 1.073741824;
+
+	if (gb >= 1000) {
+		// Show as TB with 2 decimal places if >= 1000 GB
+		return `${(gb / 1000).toFixed(2)} TB`;
+	}
+	return `${gb.toFixed(0)} GB`;
+}
+
 export function formatDuration(seconds: number): string {
 	const hours = Math.floor(seconds / 3600);
 	const minutes = Math.floor((seconds % 3600) / 60);
