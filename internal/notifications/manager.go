@@ -3,6 +3,7 @@ package notifications
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
@@ -204,7 +205,10 @@ func (m *Manager) sendNotification(title, description string, color int, cfg set
 			cfg.Notifications.Email.FromAddress,
 		)
 
-		// Build HTML email body
+		// Remove emojis from email subject to avoid UTF8 issues
+		emailSubject := stripEmojis(title)
+
+		// Build HTML email body (can include emojis here)
 		body := fmt.Sprintf(`
 <html>
 <body>
@@ -217,11 +221,11 @@ func (m *Manager) sendNotification(title, description string, color int, cfg set
 `, title, description, time.Now().Format("2006-01-02 15:04:05"))
 
 		// Note: This is a simplified version - in production you'd need to handle password properly
-		err := emailService.Send(cfg.Notifications.Email.ToAddress, title, body)
+		err := emailService.Send(cfg.Notifications.Email.ToAddress, emailSubject, body)
 		if err != nil {
 			log.Printf("Failed to send email notification: %v", err)
 		} else {
-			log.Printf("Sent email notification: %s", title)
+			log.Printf("Sent email notification: %s", emailSubject)
 		}
 	}
 
@@ -236,6 +240,18 @@ func (m *Manager) sendNotification(title, description string, color int, cfg set
 			log.Printf("Sent Discord notification: %s", title)
 		}
 	}
+}
+
+// stripEmojis removes emoji characters from a string for ASCII-only contexts
+func stripEmojis(s string) string {
+	// Remove common emojis used in notifications
+	emojis := []string{"⚠️", "🚨", "✅", "❌", "📊", "💾", "🔴", "🟡", "🟢"}
+	result := s
+	for _, emoji := range emojis {
+		result = strings.ReplaceAll(result, emoji, "")
+	}
+	// Trim leading/trailing spaces
+	return strings.TrimSpace(result)
 }
 
 // TestEmail sends a test email notification
