@@ -1,13 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
-	interface Settings {
-		appearance: 'light' | 'dark' | 'auto';
-		thresholds: {
-			warning_pct: number;
-			critical_pct: number;
-		};
-	}
+	import { settingsStore } from '$lib/stores/settings';
+	import type { Settings } from '$lib/stores/settings';
 
 	let settings: Settings = {
 		appearance: 'auto',
@@ -76,6 +70,10 @@
 			}
 
 			settings = await response.json();
+
+			// Update the global settings store so other components see the changes
+			settingsStore.set(settings);
+
 			successMessage = 'Settings saved successfully!';
 
 			// Clear success message after 3 seconds
