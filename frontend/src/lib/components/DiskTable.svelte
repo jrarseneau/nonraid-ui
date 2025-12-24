@@ -1,8 +1,12 @@
 <script lang="ts">
 	import type { Disk } from '../types';
 	import { getDiskStatusColor, formatBytes, formatBytesDetailed } from '../utils';
+	import { settingsStore } from '$lib/stores/settings';
 
 	export let disks: Disk[];
+
+	// Subscribe to settings for thresholds
+	$: thresholds = $settingsStore.thresholds;
 
 	// Helper to get display slot (P, Q, or slot number)
 	function getDisplaySlot(disk: Disk): string {
@@ -31,14 +35,13 @@
 		return parseInt(disk.filesystem.usage);
 	}
 
-	// Get gauge color based on usage level
-	// Normal: <=94% (green), Warning: 95-97% (yellow), Critical: >=98% (red)
+	// Get gauge color based on usage level (uses dynamic thresholds from settings)
 	function getGaugeColor(disk: Disk): string {
 		const usage = getUsagePercent(disk);
-		if (usage >= 98) {
+		if (usage >= thresholds.critical_pct) {
 			// Critical: red
 			return 'bg-red-500 dark:bg-red-600';
-		} else if (usage >= 95) {
+		} else if (usage >= thresholds.warning_pct) {
 			// Warning: yellow
 			return 'bg-yellow-500 dark:bg-yellow-600';
 		} else {

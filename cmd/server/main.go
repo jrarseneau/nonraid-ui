@@ -8,6 +8,7 @@ import (
 
 	"github.com/jrarseneau/nonraid-ui/internal/api"
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
+	"github.com/jrarseneau/nonraid-ui/internal/settings"
 )
 
 func main() {
@@ -26,8 +27,15 @@ func main() {
 		log.Printf("Make sure nmdctl is installed and you have sufficient privileges")
 	}
 
+	// Create and load settings
+	settingsMgr := settings.NewManager("")
+	if err := settingsMgr.Load(); err != nil {
+		log.Fatalf("Failed to load settings: %v", err)
+	}
+	log.Printf("Settings loaded from: %s", settings.DefaultSettingsPath)
+
 	// Create API server
-	server := api.NewServer(client)
+	server := api.NewServer(client, settingsMgr)
 
 	// Configure HTTP server
 	addr := *host + ":" + *port
