@@ -175,13 +175,13 @@ func (m *Manager) checkDiskStatus(status *nmdctl.Status, cfg settings.Settings) 
 	}
 
 	for _, disk := range status.Disks {
-		if disk.Status != "OK" {
+		if disk.Status != "DISK_OK" {
 			eventType := "disk_status"
 			resource := disk.DiskID
 
 			if m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
 				title := "⚠️ Disk Status Alert"
-				description := fmt.Sprintf("Disk **%s** (slot %d) status is **%s** (not OK)",
+				description := fmt.Sprintf("Disk **%s** (slot %d) status is **%s** (not DISK_OK)",
 					disk.DiskID, disk.Slot, disk.Status)
 				m.sendNotification(title, description, ColorRed, cfg)
 				m.state.MarkSent(eventType, resource)
