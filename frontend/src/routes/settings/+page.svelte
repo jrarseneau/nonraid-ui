@@ -171,12 +171,6 @@
 			}
 		}
 	}
-
-	function hashPassword(password: string): string {
-		// Simple MD5 implementation would go here
-		// For now, return as-is (will be hashed on backend)
-		return password;
-	}
 </script>
 
 <svelte:head>
@@ -467,12 +461,12 @@
 										</label>
 										<input
 											type="password"
-											bind:value={settings.notifications.email.password_md5}
+											bind:value={settings.notifications.email.password_encoded}
 											placeholder="Enter password"
 											class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
 										/>
 										<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-											Password is stored as MD5 hash
+											Password is stored securely (base64 encoded)
 										</p>
 									</div>
 

@@ -200,7 +200,7 @@ func (m *Manager) sendNotification(title, description string, color int, cfg set
 			cfg.Notifications.Email.SMTPServer,
 			cfg.Notifications.Email.SMTPPort,
 			cfg.Notifications.Email.Username,
-			cfg.Notifications.Email.PasswordMD5,
+			cfg.Notifications.Email.PasswordEncoded,
 			cfg.Notifications.Email.FromAddress,
 		)
 
@@ -244,7 +244,7 @@ func (m *Manager) TestEmail(cfg settings.EmailConfig, password string) error {
 		cfg.SMTPServer,
 		cfg.SMTPPort,
 		cfg.Username,
-		cfg.PasswordMD5,
+		"", // Not needed for test, password passed directly to TestConnection
 		cfg.FromAddress,
 	)
 

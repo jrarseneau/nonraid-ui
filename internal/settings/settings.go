@@ -47,13 +47,13 @@ type NotificationEvent struct {
 
 // EmailConfig defines email notification settings
 type EmailConfig struct {
-	Enabled     bool   `json:"enabled"`
-	SMTPServer  string `json:"smtp_server"`
-	SMTPPort    int    `json:"smtp_port"`
-	Username    string `json:"username"`
-	PasswordMD5 string `json:"password_md5"` // MD5 hashed password
-	FromAddress string `json:"from_address"`
-	ToAddress   string `json:"to_address"`
+	Enabled         bool   `json:"enabled"`
+	SMTPServer      string `json:"smtp_server"`
+	SMTPPort        int    `json:"smtp_port"`
+	Username        string `json:"username"`
+	PasswordEncoded string `json:"password_encoded"` // Base64 encoded password
+	FromAddress     string `json:"from_address"`
+	ToAddress       string `json:"to_address"`
 }
 
 // DiscordConfig defines Discord webhook notification settings

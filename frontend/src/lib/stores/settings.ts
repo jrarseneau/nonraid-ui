@@ -21,7 +21,7 @@ export interface Settings {
 			smtp_server: string;
 			smtp_port: number;
 			username: string;
-			password_md5: string;
+			password_encoded: string;
 			from_address: string;
 			to_address: string;
 		};
@@ -52,7 +52,7 @@ const defaultSettings: Settings = {
 			smtp_server: '',
 			smtp_port: 587,
 			username: '',
-			password_md5: '',
+			password_encoded: '',
 			from_address: '',
 			to_address: ''
 		},
