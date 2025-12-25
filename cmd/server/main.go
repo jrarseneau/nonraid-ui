@@ -10,6 +10,7 @@ import (
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
 	"github.com/jrarseneau/nonraid-ui/internal/notifications"
 	"github.com/jrarseneau/nonraid-ui/internal/settings"
+	"github.com/jrarseneau/nonraid-ui/internal/smartctl"
 )
 
 func main() {
@@ -42,8 +43,13 @@ func main() {
 	}
 	defer notifMgr.Stop()
 
+	// Create and start SMART cache (polls every 30 seconds)
+	smartCache := smartctl.NewCache(client, 30*time.Second)
+	smartCache.Start()
+	defer smartCache.Stop()
+
 	// Create API server
-	server := api.NewServer(client, settingsMgr, notifMgr)
+	server := api.NewServer(client, settingsMgr, notifMgr, smartCache)
 
 	// Configure HTTP server
 	addr := *host + ":" + *port

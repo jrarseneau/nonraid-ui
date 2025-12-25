@@ -75,18 +75,19 @@ type Resync struct {
 
 // Disk represents a single disk in the array
 type Disk struct {
-	Slot       int         `json:"slot"`
-	Type       string      `json:"type"`
-	SizeKB     int64       `json:"size_kb"`
-	SizeGB     int         `json:"size_gb"`
-	Device     string      `json:"device"`
-	Status     string      `json:"status"`
-	Errors     int         `json:"errors"`
-	Reads      int64       `json:"reads"`
-	Writes     int64       `json:"writes"`
-	DiskID     string      `json:"disk_id"`
-	DiskName   string      `json:"disk_name"`
-	Filesystem *Filesystem `json:"filesystem,omitempty"`
+	Slot        int         `json:"slot"`
+	Type        string      `json:"type"`
+	SizeKB      int64       `json:"size_kb"`
+	SizeGB      int         `json:"size_gb"`
+	Device      string      `json:"device"`
+	Status      string      `json:"status"`
+	Errors      int         `json:"errors"`
+	Reads       int64       `json:"reads"`
+	Writes      int64       `json:"writes"`
+	DiskID      string      `json:"disk_id"`
+	DiskName    string      `json:"disk_name"`
+	Filesystem  *Filesystem `json:"filesystem,omitempty"`
+	Temperature *int        `json:"temperature,omitempty"` // Temperature in Celsius from SMART data
 }
 
 // Filesystem represents the filesystem information for a disk

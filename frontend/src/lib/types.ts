@@ -77,6 +77,7 @@ export interface Disk {
 	disk_id: string;
 	disk_name: string;
 	filesystem?: Filesystem;
+	temperature?: number; // Temperature in Celsius from SMART data
 }
 
 export interface Filesystem {

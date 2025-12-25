@@ -13,6 +13,7 @@ import (
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
 	"github.com/jrarseneau/nonraid-ui/internal/notifications"
 	"github.com/jrarseneau/nonraid-ui/internal/settings"
+	"github.com/jrarseneau/nonraid-ui/internal/smartctl"
 )
 
 //go:embed frontend/dist/*
@@ -23,15 +24,17 @@ type Server struct {
 	client        *nmdctl.Client
 	settings      *settings.Manager
 	notifications *notifications.Manager
+	smartCache    *smartctl.Cache
 	router        *mux.Router
 }
 
 // NewServer creates a new API server
-func NewServer(client *nmdctl.Client, settingsMgr *settings.Manager, notifMgr *notifications.Manager) *Server {
+func NewServer(client *nmdctl.Client, settingsMgr *settings.Manager, notifMgr *notifications.Manager, smartCache *smartctl.Cache) *Server {
 	s := &Server{
 		client:        client,
 		settings:      settingsMgr,
 		notifications: notifMgr,
+		smartCache:    smartCache,
 		router:        mux.NewRouter(),
 	}
 	s.setupRoutes()
@@ -62,6 +65,14 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error getting status: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Merge SMART temperature data into disk info
+	for i := range status.Disks {
+		if status.Disks[i].Device != "" {
+			temp := s.smartCache.GetTemperature(status.Disks[i].Device)
+			status.Disks[i].Temperature = temp
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

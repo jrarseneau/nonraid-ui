@@ -79,6 +79,9 @@
 						Status
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+						Temperature
+					</th>
+					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Filesystem
 					</th>
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -96,7 +99,7 @@
 				<!-- Parity Section -->
 				{#if parityDisks.length > 0}
 					<tr class="bg-gray-100 dark:bg-gray-700">
-						<td colspan="7" class="px-6 py-2">
+						<td colspan="8" class="px-6 py-2">
 							<div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
 								Parity
 							</div>
@@ -118,6 +121,15 @@
 							<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {getDiskStatusColor(disk.status)}">
 								{disk.status.replace('DISK_', '')}
 							</span>
+						</td>
+						<td class="px-6 py-4 whitespace-nowrap">
+							{#if disk.temperature !== undefined && disk.temperature !== null}
+								<div class="text-sm text-gray-900 dark:text-white">
+									{disk.temperature}°C
+								</div>
+							{:else}
+								<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
+							{/if}
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
 							<div class="text-sm text-gray-900 dark:text-white">
@@ -150,7 +162,7 @@
 				<!-- Data Section -->
 				{#if dataDisks.length > 0}
 					<tr class="bg-gray-100 dark:bg-gray-700">
-						<td colspan="7" class="px-6 py-2">
+						<td colspan="8" class="px-6 py-2">
 							<div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
 								Data
 							</div>
@@ -172,6 +184,15 @@
 							<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {getDiskStatusColor(disk.status)}">
 								{disk.status.replace('DISK_', '')}
 							</span>
+						</td>
+						<td class="px-6 py-4 whitespace-nowrap">
+							{#if disk.temperature !== undefined && disk.temperature !== null}
+								<div class="text-sm text-gray-900 dark:text-white">
+									{disk.temperature}°C
+								</div>
+							{:else}
+								<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
+							{/if}
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
 							<div class="text-sm text-gray-900 dark:text-white">
