@@ -113,8 +113,19 @@
 							</div>
 						</td>
 						<td class="px-6 py-4">
-							<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
-								{disk.disk_id}
+							<div class="flex items-center gap-2">
+								<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
+									{disk.disk_id}
+								</div>
+								<a
+									href="/disk/{disk.slot}"
+									class="flex-shrink-0 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+									title="View disk details"
+								>
+									<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+								</a>
 							</div>
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
@@ -176,8 +187,19 @@
 							</div>
 						</td>
 						<td class="px-6 py-4">
-							<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
-								{disk.disk_id}
+							<div class="flex items-center gap-2">
+								<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
+									{disk.disk_id}
+								</div>
+								<a
+									href="/disk/{disk.slot}"
+									class="flex-shrink-0 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+									title="View disk details"
+								>
+									<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+								</a>
 							</div>
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">

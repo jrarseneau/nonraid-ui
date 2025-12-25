@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
@@ -45,6 +46,7 @@ func (s *Server) setupRoutes() {
 	// API routes
 	api := s.router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/status", s.handleStatus).Methods("GET")
+	api.HandleFunc("/disk/{slot}", s.handleDiskDetails).Methods("GET")
 	api.HandleFunc("/settings", s.handleGetSettings).Methods("GET")
 	api.HandleFunc("/settings", s.handleUpdateSettings).Methods("PUT")
 	api.HandleFunc("/notifications/test/email", s.handleTestEmail).Methods("POST")
@@ -77,6 +79,87 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(status)
+}
+
+// DiskDetails represents the combined disk information
+type DiskDetails struct {
+	Disk      nmdctl.Disk          `json:"disk"`
+	SmartData *smartctl.FullSmartData `json:"smart_data,omitempty"`
+	AllDisks  []DiskNavigationInfo `json:"all_disks"` // For navigation
+}
+
+// DiskNavigationInfo contains minimal info for navigation
+type DiskNavigationInfo struct {
+	Slot int    `json:"slot"`
+	Type string `json:"type"`
+}
+
+func (s *Server) handleDiskDetails(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slotStr := vars["slot"]
+
+	slot, err := strconv.Atoi(slotStr)
+	if err != nil {
+		http.Error(w, "Invalid slot number", http.StatusBadRequest)
+		return
+	}
+
+	// Get current status from nmdctl
+	status, err := s.client.GetStatus()
+	if err != nil {
+		log.Printf("Error getting status: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Find the disk with the matching slot
+	var targetDisk *nmdctl.Disk
+	for i := range status.Disks {
+		if status.Disks[i].Slot == slot {
+			targetDisk = &status.Disks[i]
+			break
+		}
+	}
+
+	if targetDisk == nil {
+		http.Error(w, "Disk not found", http.StatusNotFound)
+		return
+	}
+
+	// Add temperature from cache
+	if targetDisk.Device != "" {
+		temp := s.smartCache.GetTemperature(targetDisk.Device)
+		targetDisk.Temperature = temp
+	}
+
+	// Get full SMART data
+	var smartData *smartctl.FullSmartData
+	if targetDisk.Device != "" {
+		smartClient := smartctl.NewClient()
+		smartData, err = smartClient.GetFullData(targetDisk.Device)
+		if err != nil {
+			log.Printf("Warning: Failed to get SMART data for %s: %v", targetDisk.Device, err)
+			// Don't fail the request, just continue without SMART data
+		}
+	}
+
+	// Build navigation info (all disks sorted by slot)
+	allDisksNav := make([]DiskNavigationInfo, len(status.Disks))
+	for i, disk := range status.Disks {
+		allDisksNav[i] = DiskNavigationInfo{
+			Slot: disk.Slot,
+			Type: disk.Type,
+		}
+	}
+
+	response := DiskDetails{
+		Disk:      *targetDisk,
+		SmartData: smartData,
+		AllDisks:  allDisksNav,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
 // Router returns the configured router

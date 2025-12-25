@@ -85,3 +85,75 @@ export interface Filesystem {
 	mountpoint: string;
 	usage: string;
 }
+
+export interface DiskDetails {
+	disk: Disk;
+	smart_data?: FullSmartData;
+	all_disks: DiskNavigationInfo[];
+}
+
+export interface DiskNavigationInfo {
+	slot: number;
+	type: string;
+}
+
+export interface FullSmartData {
+	device: DeviceInfo;
+	smart_status?: SmartStatus;
+	temperature?: {
+		current: number;
+	};
+	power_on_time?: {
+		hours: number;
+	};
+	power_cycle_count?: number;
+	ata_smart_attributes?: AtaSmartAttributes;
+	smartctl: SmartctlInfo;
+}
+
+export interface DeviceInfo {
+	name: string;
+	info_name: string;
+	type: string;
+	protocol: string;
+}
+
+export interface SmartStatus {
+	passed: boolean;
+}
+
+export interface AtaSmartAttributes {
+	table: SmartAttribute[];
+}
+
+export interface SmartAttribute {
+	id: number;
+	name: string;
+	value: number;
+	worst: number;
+	thresh: number;
+	when_failed: string;
+	flags: {
+		value: number;
+		string: string;
+		prefailure: boolean;
+		updated_online: boolean;
+		performance: boolean;
+		error_rate: boolean;
+		event_count: boolean;
+		auto_keep: boolean;
+	};
+	raw: {
+		value: number;
+		string: string;
+	};
+}
+
+export interface SmartctlInfo {
+	version: number[];
+	exit_status: number;
+	messages?: {
+		string: string;
+		severity: string;
+	}[];
+}
