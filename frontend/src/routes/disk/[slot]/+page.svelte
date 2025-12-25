@@ -29,7 +29,7 @@
 	});
 
 	// Reload data when slot changes (for next/prev navigation)
-	$: if (slot) {
+	$: if (!isNaN(slot) && slot !== undefined) {
 		loadDiskDetails();
 	}
 
