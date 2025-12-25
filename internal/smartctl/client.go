@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -33,19 +32,16 @@ type Temperature struct {
 	Current int `json:"current"` // Temperature in Celsius
 }
 
-// normalizeDevicePath converts partition paths to base device paths
-// Examples: sdp1 -> /dev/sdp, /dev/sdp1 -> /dev/sdp, nvme0n1p1 -> /dev/nvme0n1
+// normalizeDevicePath ensures the device path has /dev/ prefix
+// smartctl works fine with partition paths, so we just add the prefix if missing
+// Examples: sdp1 -> /dev/sdp1, /dev/sdp1 -> /dev/sdp1
 func normalizeDevicePath(device string) string {
-	// Remove /dev/ prefix if present
-	device = strings.TrimPrefix(device, "/dev/")
-
-	// Regular expression to strip partition numbers
-	// Handles both sda1 style and nvme0n1p1 style
-	partitionRegex := regexp.MustCompile(`(p)?[0-9]+$`)
-	baseDevice := partitionRegex.ReplaceAllString(device, "")
-
+	// If it already has /dev/ prefix, return as-is
+	if strings.HasPrefix(device, "/dev/") {
+		return device
+	}
 	// Add /dev/ prefix
-	return "/dev/" + baseDevice
+	return "/dev/" + device
 }
 
 // GetTemperature fetches the current temperature for a device
