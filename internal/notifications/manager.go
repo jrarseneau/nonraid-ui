@@ -96,8 +96,8 @@ func (m *Manager) checkArrayHealth(status *nmdctl.Status, cfg settings.Settings)
 		return
 	}
 
-	// Check if array is not healthy
-	if status.Array.State != "healthy" {
+	// Check if array health status is not HEALTHY
+	if status.Array.Health.Status != "HEALTHY" {
 		eventType := "array_health"
 		resource := "array"
 
@@ -108,7 +108,8 @@ func (m *Manager) checkArrayHealth(status *nmdctl.Status, cfg settings.Settings)
 
 		// Send notification
 		title := "⚠️ Array Health Alert"
-		description := fmt.Sprintf("Array state is **%s** (not healthy)", status.Array.State)
+		description := fmt.Sprintf("Array health status is **%s** (not HEALTHY). Details: %s",
+			status.Array.Health.Status, status.Array.Health.Details)
 		m.sendNotification(title, description, ColorYellow, cfg)
 
 		// Mark as sent
