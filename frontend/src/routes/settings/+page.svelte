@@ -3,6 +3,9 @@
 	import { settingsStore } from '$lib/stores/settings';
 	import type { Settings } from '$lib/stores/settings';
 
+	type Tab = 'general' | 'notifications';
+	let activeTab: Tab = 'general';
+
 	let settings: Settings;
 	let loading = true;
 	let saving = false;
@@ -18,9 +21,32 @@
 	let testingDiscord = false;
 	let testDiscordMessage = '';
 
+	// Handle URL hash for tab navigation
+	function updateTabFromHash() {
+		const hash = window.location.hash.slice(1);
+		if (hash === 'general' || hash === 'notifications') {
+			activeTab = hash;
+		} else {
+			activeTab = 'general';
+		}
+	}
+
+	function setActiveTab(tab: Tab) {
+		activeTab = tab;
+		window.location.hash = tab;
+	}
+
 	// Load settings on mount
 	onMount(async () => {
 		await loadSettings();
+		updateTabFromHash();
+
+		// Listen for hash changes
+		window.addEventListener('hashchange', updateTabFromHash);
+
+		return () => {
+			window.removeEventListener('hashchange', updateTabFromHash);
+		};
 	});
 
 	async function loadSettings() {
@@ -191,10 +217,36 @@
 		</div>
 	{:else}
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+			<!-- Tab Navigation -->
+			<div class="border-b border-gray-200 dark:border-gray-700">
+				<nav class="flex -mb-px" aria-label="Tabs">
+					<button
+						type="button"
+						on:click={() => setActiveTab('general')}
+						class="w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors {activeTab === 'general'
+							? 'border-blue-500 text-blue-600 dark:text-blue-400'
+							: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'}"
+					>
+						General
+					</button>
+					<button
+						type="button"
+						on:click={() => setActiveTab('notifications')}
+						class="w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors {activeTab === 'notifications'
+							? 'border-blue-500 text-blue-600 dark:text-blue-400'
+							: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'}"
+					>
+						Notifications
+					</button>
+				</nav>
+			</div>
+
 			<form on:submit|preventDefault={saveSettings}>
-				<!-- Appearance Section -->
-				<div class="p-6 border-b border-gray-200 dark:border-gray-700">
-					<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Appearance</h2>
+				<!-- General Tab -->
+				{#if activeTab === 'general'}
+					<!-- Appearance Section -->
+					<div class="p-6 border-b border-gray-200 dark:border-gray-700">
+						<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Appearance</h2>
 					<div class="space-y-3">
 						<label class="flex items-center cursor-pointer">
 							<input
@@ -231,8 +283,8 @@
 					</div>
 				</div>
 
-				<!-- Thresholds Section -->
-				<div class="p-6 border-b border-gray-200 dark:border-gray-700">
+					<!-- Thresholds Section -->
+					<div class="p-6 border-b border-gray-200 dark:border-gray-700">
 					<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
 						Disk Usage Thresholds
 					</h2>
@@ -312,10 +364,13 @@
 							</div>
 						</div>
 					</div>
-				</div>
+					</div>
+				{/if}
 
-				<!-- Notifications Section -->
-				<div class="p-6 border-b border-gray-200 dark:border-gray-700">
+				<!-- Notifications Tab -->
+				{#if activeTab === 'notifications'}
+					<!-- Notifications Section -->
+					<div class="p-6 border-b border-gray-200 dark:border-gray-700">
 					<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
 						Notifications
 					</h2>
@@ -572,7 +627,8 @@
 							{/if}
 						</div>
 					{/if}
-				</div>
+					</div>
+				{/if}
 
 				<!-- Messages -->
 				{#if error}
