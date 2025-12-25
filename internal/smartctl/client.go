@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -31,6 +33,21 @@ type Temperature struct {
 	Current int `json:"current"` // Temperature in Celsius
 }
 
+// normalizeDevicePath converts partition paths to base device paths
+// Examples: sdp1 -> /dev/sdp, /dev/sdp1 -> /dev/sdp, nvme0n1p1 -> /dev/nvme0n1
+func normalizeDevicePath(device string) string {
+	// Remove /dev/ prefix if present
+	device = strings.TrimPrefix(device, "/dev/")
+
+	// Regular expression to strip partition numbers
+	// Handles both sda1 style and nvme0n1p1 style
+	partitionRegex := regexp.MustCompile(`(p)?[0-9]+$`)
+	baseDevice := partitionRegex.ReplaceAllString(device, "")
+
+	// Add /dev/ prefix
+	return "/dev/" + baseDevice
+}
+
 // GetTemperature fetches the current temperature for a device
 // Returns nil if temperature data is not available
 func (c *Client) GetTemperature(device string) (*int, error) {
@@ -38,11 +55,14 @@ func (c *Client) GetTemperature(device string) (*int, error) {
 		return nil, fmt.Errorf("device cannot be empty")
 	}
 
+	// Normalize device path (strip partition numbers, ensure /dev/ prefix)
+	normalizedDevice := normalizeDevicePath(device)
+
 	// Execute smartctl with JSON output
 	// -A shows all SMART attributes
 	// -j outputs JSON format
 	// --nocheck=standby prevents waking up sleeping drives
-	cmd := exec.Command(c.command, "-A", "-j", "--nocheck=standby", device)
+	cmd := exec.Command(c.command, "-A", "-j", "--nocheck=standby", normalizedDevice)
 
 	// Create a channel for timeout
 	done := make(chan error, 1)
@@ -70,20 +90,20 @@ func (c *Client) GetTemperature(device string) (*int, error) {
 					}
 				}
 			}
-			return nil, fmt.Errorf("smartctl command failed for %s: %w (output: %s)", device, err, string(output))
+			return nil, fmt.Errorf("smartctl command failed for %s: %w (output: %s)", normalizedDevice, err, string(output))
 		}
 	case <-time.After(c.timeout):
 		// Kill the process if it's still running
 		if cmd.Process != nil {
 			cmd.Process.Kill()
 		}
-		return nil, fmt.Errorf("smartctl timeout for device %s", device)
+		return nil, fmt.Errorf("smartctl timeout for device %s", normalizedDevice)
 	}
 
 	// Parse the JSON output
 	var data SmartData
 	if err := json.Unmarshal(output, &data); err != nil {
-		return nil, fmt.Errorf("failed to parse smartctl output for %s: %w", device, err)
+		return nil, fmt.Errorf("failed to parse smartctl output for %s: %w", normalizedDevice, err)
 	}
 
 	// Extract temperature
