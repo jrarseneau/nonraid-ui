@@ -61,15 +61,11 @@
 	}
 
 	// Find previous and next disks for navigation
-	$: prevDisk = diskDetails?.all_disks.find((d, i) => {
-		const currentIndex = diskDetails?.all_disks.findIndex(disk => disk.slot === slot);
-		return currentIndex !== undefined && i === currentIndex - 1;
-	});
-
-	$: nextDisk = diskDetails?.all_disks.find((d, i) => {
-		const currentIndex = diskDetails?.all_disks.findIndex(disk => disk.slot === slot);
-		return currentIndex !== undefined && i === currentIndex + 1;
-	});
+	$: currentIndex = diskDetails?.all_disks.findIndex(d => d.slot === slot) ?? -1;
+	$: prevDisk = currentIndex > 0 && diskDetails ? diskDetails.all_disks[currentIndex - 1] : undefined;
+	$: nextDisk = currentIndex >= 0 && diskDetails && currentIndex < diskDetails.all_disks.length - 1
+		? diskDetails.all_disks[currentIndex + 1]
+		: undefined;
 </script>
 
 <svelte:head>
