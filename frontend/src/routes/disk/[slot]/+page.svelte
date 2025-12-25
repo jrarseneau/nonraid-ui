@@ -28,6 +28,11 @@
 		loadDiskDetails();
 	});
 
+	// Reload data when slot changes (for next/prev navigation)
+	$: if (slot) {
+		loadDiskDetails();
+	}
+
 	// Helper to get display slot (P, Q, or slot number)
 	function getDisplaySlot(type: string, slot: number): string {
 		if (type === 'P') return 'P';

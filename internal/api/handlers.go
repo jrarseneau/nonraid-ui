@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -52,12 +53,37 @@ func (s *Server) setupRoutes() {
 	api.HandleFunc("/notifications/test/email", s.handleTestEmail).Methods("POST")
 	api.HandleFunc("/notifications/test/discord", s.handleTestDiscord).Methods("POST")
 
-	// Serve embedded frontend
+	// Serve embedded frontend with SPA fallback
 	frontendSubFS, err := fs.Sub(frontendFS, "frontend/dist")
 	if err != nil {
 		log.Printf("Warning: frontend assets not embedded, serving will fail: %v", err)
 	} else {
-		s.router.PathPrefix("/").Handler(http.FileServer(http.FS(frontendSubFS)))
+		s.router.PathPrefix("/").HandlerFunc(s.handleSPA(frontendSubFS))
+	}
+}
+
+// handleSPA serves the SPA with fallback to index.html for client-side routing
+func (s *Server) handleSPA(fsys fs.FS) http.HandlerFunc {
+	fileServer := http.FileServer(http.FS(fsys))
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Try to open the requested file
+		path := r.URL.Path
+		if path == "/" {
+			path = "/index.html"
+		}
+
+		file, err := fsys.Open(path[1:]) // Remove leading slash
+		if err == nil {
+			file.Close()
+			// File exists, serve it normally
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+
+		// File doesn't exist, serve index.html for client-side routing
+		r.URL.Path = "/"
+		fileServer.ServeHTTP(w, r)
 	}
 }
 
@@ -143,7 +169,7 @@ func (s *Server) handleDiskDetails(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Build navigation info (all disks sorted by slot)
+	// Build navigation info (all disks sorted: P, Q, then 1-N)
 	allDisksNav := make([]DiskNavigationInfo, len(status.Disks))
 	for i, disk := range status.Disks {
 		allDisksNav[i] = DiskNavigationInfo{
@@ -151,6 +177,26 @@ func (s *Server) handleDiskDetails(w http.ResponseWriter, r *http.Request) {
 			Type: disk.Type,
 		}
 	}
+
+	// Sort disks: P first, Q second, then numerical order
+	sort.Slice(allDisksNav, func(i, j int) bool {
+		// P comes first
+		if allDisksNav[i].Type == "P" {
+			return true
+		}
+		if allDisksNav[j].Type == "P" {
+			return false
+		}
+		// Q comes second
+		if allDisksNav[i].Type == "Q" {
+			return true
+		}
+		if allDisksNav[j].Type == "Q" {
+			return false
+		}
+		// Both are data disks, sort by slot number
+		return allDisksNav[i].Slot < allDisksNav[j].Slot
+	})
 
 	response := DiskDetails{
 		Disk:      *targetDisk,
