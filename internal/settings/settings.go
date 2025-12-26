@@ -43,10 +43,12 @@ type Notifications struct {
 
 // NotificationEvent defines which events trigger notifications
 type NotificationEvent struct {
-	ArrayHealth      bool `json:"array_health"`       // Array not healthy
-	DiskWarning      bool `json:"disk_warning"`       // Disk usage >= warning threshold
-	DiskCritical     bool `json:"disk_critical"`      // Disk usage >= critical threshold
-	DiskStatusNotOK  bool `json:"disk_status_not_ok"` // Disk status != OK
+	ArrayHealth      bool `json:"array_health"`        // Array not healthy
+	DiskWarning      bool `json:"disk_warning"`        // Disk usage >= warning threshold
+	DiskCritical     bool `json:"disk_critical"`       // Disk usage >= critical threshold
+	DiskTempWarning  bool `json:"disk_temp_warning"`   // Disk temperature >= temp warning threshold
+	DiskTempCritical bool `json:"disk_temp_critical"`  // Disk temperature >= temp critical threshold
+	DiskStatusNotOK  bool `json:"disk_status_not_ok"`  // Disk status != OK
 }
 
 // EmailConfig defines email notification settings

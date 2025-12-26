@@ -15,6 +15,8 @@ export interface Settings {
 			array_health: boolean;
 			disk_warning: boolean;
 			disk_critical: boolean;
+			disk_temp_warning: boolean;
+			disk_temp_critical: boolean;
 			disk_status_not_ok: boolean;
 		};
 		frequency: 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
@@ -48,6 +50,8 @@ const defaultSettings: Settings = {
 			array_health: false,
 			disk_warning: false,
 			disk_critical: false,
+			disk_temp_warning: false,
+			disk_temp_critical: false,
 			disk_status_not_ok: false
 		},
 		frequency: 'once',

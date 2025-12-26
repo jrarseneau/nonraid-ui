@@ -480,6 +480,26 @@
 								<label class="flex items-center cursor-pointer">
 									<input
 										type="checkbox"
+										bind:checked={settings.notifications.events.disk_temp_warning}
+										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+									/>
+									<span class="ml-3 text-gray-900 dark:text-white">
+										Disk Temperature Warning (at warning threshold)
+									</span>
+								</label>
+								<label class="flex items-center cursor-pointer">
+									<input
+										type="checkbox"
+										bind:checked={settings.notifications.events.disk_temp_critical}
+										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+									/>
+									<span class="ml-3 text-gray-900 dark:text-white">
+										Disk Temperature Critical (at critical threshold)
+									</span>
+								</label>
+								<label class="flex items-center cursor-pointer">
+									<input
+										type="checkbox"
 										bind:checked={settings.notifications.events.disk_status_not_ok}
 										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
 									/>
