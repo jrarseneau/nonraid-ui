@@ -87,6 +87,7 @@ func (m *Manager) checkAndNotify() {
 	// Check for events
 	m.checkArrayHealth(status, cfg)
 	m.checkDiskUsage(status, cfg)
+	m.checkDiskTemperature(status, cfg)
 	m.checkDiskStatus(status, cfg)
 }
 
@@ -165,6 +166,48 @@ func (m *Manager) checkDiskUsage(status *nmdctl.Status, cfg settings.Settings) {
 			// Usage is below thresholds, clear states
 			m.state.Clear("disk_critical", disk.DiskID)
 			m.state.Clear("disk_warning", disk.DiskID)
+		}
+	}
+}
+
+// checkDiskTemperature checks disk temperature against thresholds
+func (m *Manager) checkDiskTemperature(status *nmdctl.Status, cfg settings.Settings) {
+	for _, disk := range status.Disks {
+		// Skip if no temperature data
+		if disk.Temperature == nil {
+			continue
+		}
+
+		temp := *disk.Temperature
+
+		// Check critical threshold
+		if cfg.Notifications.Events.DiskTempCritical && temp >= cfg.Thresholds.TempCriticalC {
+			eventType := "disk_temp_critical"
+			resource := disk.DiskID
+
+			if m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
+				title := "🚨 Disk Temperature Critical Alert"
+				description := fmt.Sprintf("Disk **%s** (slot %d) has reached **%d°C** (critical threshold: %d°C)",
+					disk.DiskID, disk.Slot, temp, cfg.Thresholds.TempCriticalC)
+				m.sendNotification(title, description, ColorRed, cfg)
+				m.state.MarkSent(eventType, resource)
+			}
+		} else if cfg.Notifications.Events.DiskTempWarning && temp >= cfg.Thresholds.TempWarningC {
+			// Check warning threshold (only if not critical)
+			eventType := "disk_temp_warning"
+			resource := disk.DiskID
+
+			if m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
+				title := "⚠️ Disk Temperature Warning Alert"
+				description := fmt.Sprintf("Disk **%s** (slot %d) has reached **%d°C** (warning threshold: %d°C)",
+					disk.DiskID, disk.Slot, temp, cfg.Thresholds.TempWarningC)
+				m.sendNotification(title, description, ColorYellow, cfg)
+				m.state.MarkSent(eventType, resource)
+			}
+		} else {
+			// Temperature is below thresholds, clear states
+			m.state.Clear("disk_temp_critical", disk.DiskID)
+			m.state.Clear("disk_temp_warning", disk.DiskID)
 		}
 	}
 }
