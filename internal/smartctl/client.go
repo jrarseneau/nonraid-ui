@@ -35,6 +35,12 @@ type Temperature struct {
 // FullSmartData represents the complete smartctl JSON output
 type FullSmartData struct {
 	Device         DeviceInfo       `json:"device"`
+	ModelFamily    string           `json:"model_family,omitempty"`
+	ModelName      string           `json:"model_name,omitempty"`
+	SerialNumber   string           `json:"serial_number,omitempty"`
+	FirmwareVersion string          `json:"firmware_version,omitempty"`
+	RotationRate   int              `json:"rotation_rate,omitempty"` // RPM, 0 for SSD
+	FormFactor     *FormFactor      `json:"form_factor,omitempty"`
 	SmartStatus    *SmartStatus     `json:"smart_status,omitempty"`
 	Temperature    *Temperature     `json:"temperature,omitempty"`
 	PowerOnTime    *PowerOnTime     `json:"power_on_time,omitempty"`
@@ -59,6 +65,12 @@ type SmartStatus struct {
 // PowerOnTime contains power-on hours
 type PowerOnTime struct {
 	Hours int `json:"hours"`
+}
+
+// FormFactor contains form factor information
+type FormFactor struct {
+	AtaValue int    `json:"ata_value"`
+	Name     string `json:"name"`
 }
 
 // AtaSmartAttributes contains the table of SMART attributes

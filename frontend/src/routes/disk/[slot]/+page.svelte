@@ -317,36 +317,64 @@
 				</div>
 			</div>
 
-			<!-- Device Information -->
+			<!-- Disk Hardware Information -->
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
 				<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-					<h3 class="text-lg font-bold text-gray-900 dark:text-white">Device Information</h3>
+					<h3 class="text-lg font-bold text-gray-900 dark:text-white">Disk Hardware Information</h3>
 				</div>
 				<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Device Name</div>
-						<div class="mt-1 text-lg font-mono text-gray-900 dark:text-white">
-							{diskDetails.smart_data.device.name}
+					{#if diskDetails.smart_data.model_family}
+						<div>
+							<div class="text-sm text-gray-500 dark:text-gray-400">Model Family</div>
+							<div class="mt-1 text-lg text-gray-900 dark:text-white">
+								{diskDetails.smart_data.model_family}
+							</div>
 						</div>
-					</div>
-					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Model</div>
-						<div class="mt-1 text-lg text-gray-900 dark:text-white">
-							{diskDetails.smart_data.device.info_name || '-'}
+					{/if}
+					{#if diskDetails.smart_data.model_name}
+						<div>
+							<div class="text-sm text-gray-500 dark:text-gray-400">Device Model</div>
+							<div class="mt-1 text-lg font-mono text-gray-900 dark:text-white">
+								{diskDetails.smart_data.model_name}
+							</div>
 						</div>
-					</div>
-					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Type</div>
-						<div class="mt-1 text-lg text-gray-900 dark:text-white">
-							{diskDetails.smart_data.device.type}
+					{/if}
+					{#if diskDetails.smart_data.serial_number}
+						<div>
+							<div class="text-sm text-gray-500 dark:text-gray-400">Serial Number</div>
+							<div class="mt-1 text-lg font-mono text-gray-900 dark:text-white">
+								{diskDetails.smart_data.serial_number}
+							</div>
 						</div>
-					</div>
-					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Protocol</div>
-						<div class="mt-1 text-lg text-gray-900 dark:text-white">
-							{diskDetails.smart_data.device.protocol}
+					{/if}
+					{#if diskDetails.smart_data.firmware_version}
+						<div>
+							<div class="text-sm text-gray-500 dark:text-gray-400">Firmware Version</div>
+							<div class="mt-1 text-lg font-mono text-gray-900 dark:text-white">
+								{diskDetails.smart_data.firmware_version}
+							</div>
 						</div>
-					</div>
+					{/if}
+					{#if diskDetails.smart_data.rotation_rate !== undefined}
+						<div>
+							<div class="text-sm text-gray-500 dark:text-gray-400">Rotation Rate</div>
+							<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+								{#if diskDetails.smart_data.rotation_rate === 0}
+									SSD (Solid State)
+								{:else}
+									{diskDetails.smart_data.rotation_rate.toLocaleString()} RPM
+								{/if}
+							</div>
+						</div>
+					{/if}
+					{#if diskDetails.smart_data.form_factor}
+						<div>
+							<div class="text-sm text-gray-500 dark:text-gray-400">Form Factor</div>
+							<div class="mt-1 text-lg text-gray-900 dark:text-white">
+								{diskDetails.smart_data.form_factor.name}
+							</div>
+						</div>
+					{/if}
 				</div>
 			</div>
 

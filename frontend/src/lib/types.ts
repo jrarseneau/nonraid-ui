@@ -99,6 +99,15 @@ export interface DiskNavigationInfo {
 
 export interface FullSmartData {
 	device: DeviceInfo;
+	model_family?: string;
+	model_name?: string;
+	serial_number?: string;
+	firmware_version?: string;
+	rotation_rate?: number; // RPM, 0 for SSD
+	form_factor?: {
+		ata_value: number;
+		name: string;
+	};
 	smart_status?: SmartStatus;
 	temperature?: {
 		current: number;
