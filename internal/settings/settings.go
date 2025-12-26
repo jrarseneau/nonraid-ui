@@ -211,11 +211,11 @@ func (m *Manager) validateAndFixUnsafe() {
 		m.settings.Thresholds.CriticalPct = DefaultCriticalPct
 	}
 
-	// Validate temperature thresholds (reasonable range: 0-100°C)
-	if m.settings.Thresholds.TempWarningC < 0 || m.settings.Thresholds.TempWarningC > 100 {
+	// Validate temperature thresholds (reasonable range: 1-100°C, 0 is invalid)
+	if m.settings.Thresholds.TempWarningC <= 0 || m.settings.Thresholds.TempWarningC > 100 {
 		m.settings.Thresholds.TempWarningC = DefaultTempWarningC
 	}
-	if m.settings.Thresholds.TempCriticalC < 0 || m.settings.Thresholds.TempCriticalC > 100 {
+	if m.settings.Thresholds.TempCriticalC <= 0 || m.settings.Thresholds.TempCriticalC > 100 {
 		m.settings.Thresholds.TempCriticalC = DefaultTempCriticalC
 	}
 
