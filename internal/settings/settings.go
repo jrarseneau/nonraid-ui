@@ -15,6 +15,7 @@ const (
 	DefaultCriticalPct        = 98
 	DefaultTempWarningC       = 45
 	DefaultTempCriticalC      = 55
+	DefaultNotifyFrequency    = "once"
 )
 
 // Settings represents the application configuration
@@ -34,21 +35,27 @@ type Thresholds struct {
 
 // Notifications defines notification settings
 type Notifications struct {
-	Enabled   bool              `json:"enabled"`
-	Events    NotificationEvent `json:"events"`
-	Frequency string            `json:"frequency"` // "once", "15m", "30m", "1h", "3h", "6h", "12h", "24h"
-	Email     EmailConfig       `json:"email"`
-	Discord   DiscordConfig     `json:"discord"`
+	Enabled          bool              `json:"enabled"`
+	DefaultFrequency string            `json:"default_frequency"` // "once", "15m", "30m", "1h", "3h", "6h", "12h", "24h"
+	Events           NotificationEvent `json:"events"`
+	Email            EmailConfig       `json:"email"`
+	Discord          DiscordConfig     `json:"discord"`
+}
+
+// NotificationEventConfig defines configuration for a single notification event
+type NotificationEventConfig struct {
+	Enabled   bool   `json:"enabled"`
+	Frequency string `json:"frequency"` // "default", "once", "15m", "30m", "1h", "3h", "6h", "12h", "24h"
 }
 
 // NotificationEvent defines which events trigger notifications
 type NotificationEvent struct {
-	ArrayHealth      bool `json:"array_health"`        // Array not healthy
-	DiskWarning      bool `json:"disk_warning"`        // Disk usage >= warning threshold
-	DiskCritical     bool `json:"disk_critical"`       // Disk usage >= critical threshold
-	DiskTempWarning  bool `json:"disk_temp_warning"`   // Disk temperature >= temp warning threshold
-	DiskTempCritical bool `json:"disk_temp_critical"`  // Disk temperature >= temp critical threshold
-	DiskStatusNotOK  bool `json:"disk_status_not_ok"`  // Disk status != OK
+	ArrayHealth      NotificationEventConfig `json:"array_health"`
+	DiskWarning      NotificationEventConfig `json:"disk_warning"`
+	DiskCritical     NotificationEventConfig `json:"disk_critical"`
+	DiskTempWarning  NotificationEventConfig `json:"disk_temp_warning"`
+	DiskTempCritical NotificationEventConfig `json:"disk_temp_critical"`
+	DiskStatusNotOK  NotificationEventConfig `json:"disk_status_not_ok"`
 }
 
 // EmailConfig defines email notification settings
@@ -97,9 +104,16 @@ func GetDefaults() Settings {
 			TempCriticalC: DefaultTempCriticalC,
 		},
 		Notifications: Notifications{
-			Enabled:   false,
-			Events:    NotificationEvent{},
-			Frequency: "once",
+			Enabled:          false,
+			DefaultFrequency: DefaultNotifyFrequency,
+			Events: NotificationEvent{
+				ArrayHealth:      NotificationEventConfig{Enabled: false, Frequency: "default"},
+				DiskWarning:      NotificationEventConfig{Enabled: false, Frequency: "default"},
+				DiskCritical:     NotificationEventConfig{Enabled: false, Frequency: "default"},
+				DiskTempWarning:  NotificationEventConfig{Enabled: false, Frequency: "default"},
+				DiskTempCritical: NotificationEventConfig{Enabled: false, Frequency: "default"},
+				DiskStatusNotOK:  NotificationEventConfig{Enabled: false, Frequency: "default"},
+			},
 			Email: EmailConfig{
 				Enabled:  false,
 				SMTPPort: 587,
@@ -225,17 +239,40 @@ func (m *Manager) validateAndFixUnsafe() {
 		m.settings.Thresholds.TempCriticalC = DefaultTempCriticalC
 	}
 
-	// Validate notification frequency
-	validFrequencies := map[string]bool{
+	// Validate notification frequencies
+	validDefaultFrequencies := map[string]bool{
 		"once": true, "15m": true, "30m": true, "1h": true,
 		"3h": true, "6h": true, "12h": true, "24h": true,
 	}
-	if !validFrequencies[m.settings.Notifications.Frequency] {
-		m.settings.Notifications.Frequency = "once"
+
+	// Validate default frequency (cannot be "default")
+	if !validDefaultFrequencies[m.settings.Notifications.DefaultFrequency] {
+		m.settings.Notifications.DefaultFrequency = DefaultNotifyFrequency
 	}
+
+	// Validate and migrate event configurations
+	m.settings.Notifications.Events.ArrayHealth = m.validateEventConfig(m.settings.Notifications.Events.ArrayHealth)
+	m.settings.Notifications.Events.DiskWarning = m.validateEventConfig(m.settings.Notifications.Events.DiskWarning)
+	m.settings.Notifications.Events.DiskCritical = m.validateEventConfig(m.settings.Notifications.Events.DiskCritical)
+	m.settings.Notifications.Events.DiskTempWarning = m.validateEventConfig(m.settings.Notifications.Events.DiskTempWarning)
+	m.settings.Notifications.Events.DiskTempCritical = m.validateEventConfig(m.settings.Notifications.Events.DiskTempCritical)
+	m.settings.Notifications.Events.DiskStatusNotOK = m.validateEventConfig(m.settings.Notifications.Events.DiskStatusNotOK)
 
 	// Validate email port
 	if m.settings.Notifications.Email.SMTPPort < 1 || m.settings.Notifications.Email.SMTPPort > 65535 {
 		m.settings.Notifications.Email.SMTPPort = 587
 	}
+}
+
+// validateEventConfig validates and ensures a notification event config has valid values
+func (m *Manager) validateEventConfig(config NotificationEventConfig) NotificationEventConfig {
+	// Validate frequency
+	validFrequencies := map[string]bool{
+		"default": true, "once": true, "15m": true, "30m": true, "1h": true,
+		"3h": true, "6h": true, "12h": true, "24h": true,
+	}
+	if !validFrequencies[config.Frequency] {
+		config.Frequency = "default"
+	}
+	return config
 }

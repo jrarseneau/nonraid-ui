@@ -11,15 +11,33 @@ export interface Settings {
 	};
 	notifications: {
 		enabled: boolean;
+		default_frequency: 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
 		events: {
-			array_health: boolean;
-			disk_warning: boolean;
-			disk_critical: boolean;
-			disk_temp_warning: boolean;
-			disk_temp_critical: boolean;
-			disk_status_not_ok: boolean;
+			array_health: {
+				enabled: boolean;
+				frequency: 'default' | 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
+			};
+			disk_warning: {
+				enabled: boolean;
+				frequency: 'default' | 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
+			};
+			disk_critical: {
+				enabled: boolean;
+				frequency: 'default' | 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
+			};
+			disk_temp_warning: {
+				enabled: boolean;
+				frequency: 'default' | 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
+			};
+			disk_temp_critical: {
+				enabled: boolean;
+				frequency: 'default' | 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
+			};
+			disk_status_not_ok: {
+				enabled: boolean;
+				frequency: 'default' | 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
+			};
 		};
-		frequency: 'once' | '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '24h';
 		email: {
 			enabled: boolean;
 			smtp_server: string;
@@ -46,15 +64,15 @@ const defaultSettings: Settings = {
 	},
 	notifications: {
 		enabled: false,
+		default_frequency: 'once',
 		events: {
-			array_health: false,
-			disk_warning: false,
-			disk_critical: false,
-			disk_temp_warning: false,
-			disk_temp_critical: false,
-			disk_status_not_ok: false
+			array_health: { enabled: false, frequency: 'default' },
+			disk_warning: { enabled: false, frequency: 'default' },
+			disk_critical: { enabled: false, frequency: 'default' },
+			disk_temp_warning: { enabled: false, frequency: 'default' },
+			disk_temp_critical: { enabled: false, frequency: 'default' },
+			disk_status_not_ok: { enabled: false, frequency: 'default' }
 		},
-		frequency: 'once',
 		email: {
 			enabled: false,
 			smtp_server: '',

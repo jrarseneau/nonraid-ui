@@ -441,83 +441,14 @@
 					</label>
 
 					{#if settings.notifications.enabled}
-						<!-- Event Selection -->
+						<!-- Default Notification Frequency -->
 						<div class="mb-6">
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-								Notify on these events:
-							</label>
-							<div class="space-y-2">
-								<label class="flex items-center cursor-pointer">
-									<input
-										type="checkbox"
-										bind:checked={settings.notifications.events.array_health}
-										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
-									/>
-									<span class="ml-3 text-gray-900 dark:text-white">
-										Array Health (when array is not healthy)
-									</span>
-								</label>
-								<label class="flex items-center cursor-pointer">
-									<input
-										type="checkbox"
-										bind:checked={settings.notifications.events.disk_warning}
-										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
-									/>
-									<span class="ml-3 text-gray-900 dark:text-white">
-										Disk Usage Warning (at warning threshold)
-									</span>
-								</label>
-								<label class="flex items-center cursor-pointer">
-									<input
-										type="checkbox"
-										bind:checked={settings.notifications.events.disk_critical}
-										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
-									/>
-									<span class="ml-3 text-gray-900 dark:text-white">
-										Disk Usage Critical (at critical threshold)
-									</span>
-								</label>
-								<label class="flex items-center cursor-pointer">
-									<input
-										type="checkbox"
-										bind:checked={settings.notifications.events.disk_temp_warning}
-										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
-									/>
-									<span class="ml-3 text-gray-900 dark:text-white">
-										Disk Temperature Warning (at warning threshold)
-									</span>
-								</label>
-								<label class="flex items-center cursor-pointer">
-									<input
-										type="checkbox"
-										bind:checked={settings.notifications.events.disk_temp_critical}
-										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
-									/>
-									<span class="ml-3 text-gray-900 dark:text-white">
-										Disk Temperature Critical (at critical threshold)
-									</span>
-								</label>
-								<label class="flex items-center cursor-pointer">
-									<input
-										type="checkbox"
-										bind:checked={settings.notifications.events.disk_status_not_ok}
-										class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
-									/>
-									<span class="ml-3 text-gray-900 dark:text-white">
-										Disk Status Not OK (when any disk status is not OK)
-									</span>
-								</label>
-							</div>
-						</div>
-
-						<!-- Frequency Selection -->
-						<div class="mb-6">
-							<label for="frequency" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-								Notification Frequency
+							<label for="default-frequency" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Default Notification Frequency
 							</label>
 							<select
-								id="frequency"
-								bind:value={settings.notifications.frequency}
+								id="default-frequency"
+								bind:value={settings.notifications.default_frequency}
 								class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
 							>
 								<option value="once">Once (until condition resolved)</option>
@@ -529,6 +460,215 @@
 								<option value="12h">Every 12 hours</option>
 								<option value="24h">Every 24 hours</option>
 							</select>
+							<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+								Default frequency used for events set to "Default" below
+							</p>
+						</div>
+
+						<!-- Event Configuration Table -->
+						<div class="mb-6">
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+								Event Configuration
+							</label>
+							<div class="overflow-x-auto">
+								<table class="w-full border-collapse">
+									<thead>
+										<tr class="border-b-2 border-gray-300 dark:border-gray-600">
+											<th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+												Event
+											</th>
+											<th class="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+												Enable
+											</th>
+											<th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+												Frequency
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										<!-- Array Health -->
+										<tr class="border-b border-gray-200 dark:border-gray-700">
+											<td class="py-4 px-4 text-sm text-gray-900 dark:text-white">
+												Array Health
+												<div class="text-xs text-gray-500 dark:text-gray-400">When array is not healthy</div>
+											</td>
+											<td class="py-4 px-4 text-center">
+												<input
+													type="checkbox"
+													bind:checked={settings.notifications.events.array_health.enabled}
+													class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+												/>
+											</td>
+											<td class="py-4 px-4">
+												<select
+													bind:value={settings.notifications.events.array_health.frequency}
+													class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+												>
+													<option value="default">Default</option>
+													<option value="once">Once</option>
+													<option value="15m">Every 15 min</option>
+													<option value="30m">Every 30 min</option>
+													<option value="1h">Every 1 hour</option>
+													<option value="3h">Every 3 hours</option>
+													<option value="6h">Every 6 hours</option>
+													<option value="12h">Every 12 hours</option>
+													<option value="24h">Every 24 hours</option>
+												</select>
+											</td>
+										</tr>
+										<!-- Disk Usage Warning -->
+										<tr class="border-b border-gray-200 dark:border-gray-700">
+											<td class="py-4 px-4 text-sm text-gray-900 dark:text-white">
+												Disk Usage Warning
+												<div class="text-xs text-gray-500 dark:text-gray-400">At warning threshold</div>
+											</td>
+											<td class="py-4 px-4 text-center">
+												<input
+													type="checkbox"
+													bind:checked={settings.notifications.events.disk_warning.enabled}
+													class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+												/>
+											</td>
+											<td class="py-4 px-4">
+												<select
+													bind:value={settings.notifications.events.disk_warning.frequency}
+													class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+												>
+													<option value="default">Default</option>
+													<option value="once">Once</option>
+													<option value="15m">Every 15 min</option>
+													<option value="30m">Every 30 min</option>
+													<option value="1h">Every 1 hour</option>
+													<option value="3h">Every 3 hours</option>
+													<option value="6h">Every 6 hours</option>
+													<option value="12h">Every 12 hours</option>
+													<option value="24h">Every 24 hours</option>
+												</select>
+											</td>
+										</tr>
+										<!-- Disk Usage Critical -->
+										<tr class="border-b border-gray-200 dark:border-gray-700">
+											<td class="py-4 px-4 text-sm text-gray-900 dark:text-white">
+												Disk Usage Critical
+												<div class="text-xs text-gray-500 dark:text-gray-400">At critical threshold</div>
+											</td>
+											<td class="py-4 px-4 text-center">
+												<input
+													type="checkbox"
+													bind:checked={settings.notifications.events.disk_critical.enabled}
+													class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+												/>
+											</td>
+											<td class="py-4 px-4">
+												<select
+													bind:value={settings.notifications.events.disk_critical.frequency}
+													class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+												>
+													<option value="default">Default</option>
+													<option value="once">Once</option>
+													<option value="15m">Every 15 min</option>
+													<option value="30m">Every 30 min</option>
+													<option value="1h">Every 1 hour</option>
+													<option value="3h">Every 3 hours</option>
+													<option value="6h">Every 6 hours</option>
+													<option value="12h">Every 12 hours</option>
+													<option value="24h">Every 24 hours</option>
+												</select>
+											</td>
+										</tr>
+										<!-- Disk Temperature Warning -->
+										<tr class="border-b border-gray-200 dark:border-gray-700">
+											<td class="py-4 px-4 text-sm text-gray-900 dark:text-white">
+												Disk Temperature Warning
+												<div class="text-xs text-gray-500 dark:text-gray-400">At warning threshold</div>
+											</td>
+											<td class="py-4 px-4 text-center">
+												<input
+													type="checkbox"
+													bind:checked={settings.notifications.events.disk_temp_warning.enabled}
+													class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+												/>
+											</td>
+											<td class="py-4 px-4">
+												<select
+													bind:value={settings.notifications.events.disk_temp_warning.frequency}
+													class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+												>
+													<option value="default">Default</option>
+													<option value="once">Once</option>
+													<option value="15m">Every 15 min</option>
+													<option value="30m">Every 30 min</option>
+													<option value="1h">Every 1 hour</option>
+													<option value="3h">Every 3 hours</option>
+													<option value="6h">Every 6 hours</option>
+													<option value="12h">Every 12 hours</option>
+													<option value="24h">Every 24 hours</option>
+												</select>
+											</td>
+										</tr>
+										<!-- Disk Temperature Critical -->
+										<tr class="border-b border-gray-200 dark:border-gray-700">
+											<td class="py-4 px-4 text-sm text-gray-900 dark:text-white">
+												Disk Temperature Critical
+												<div class="text-xs text-gray-500 dark:text-gray-400">At critical threshold</div>
+											</td>
+											<td class="py-4 px-4 text-center">
+												<input
+													type="checkbox"
+													bind:checked={settings.notifications.events.disk_temp_critical.enabled}
+													class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+												/>
+											</td>
+											<td class="py-4 px-4">
+												<select
+													bind:value={settings.notifications.events.disk_temp_critical.frequency}
+													class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+												>
+													<option value="default">Default</option>
+													<option value="once">Once</option>
+													<option value="15m">Every 15 min</option>
+													<option value="30m">Every 30 min</option>
+													<option value="1h">Every 1 hour</option>
+													<option value="3h">Every 3 hours</option>
+													<option value="6h">Every 6 hours</option>
+													<option value="12h">Every 12 hours</option>
+													<option value="24h">Every 24 hours</option>
+												</select>
+											</td>
+										</tr>
+										<!-- Disk Status Not OK -->
+										<tr class="border-b border-gray-200 dark:border-gray-700">
+											<td class="py-4 px-4 text-sm text-gray-900 dark:text-white">
+												Disk Status Not OK
+												<div class="text-xs text-gray-500 dark:text-gray-400">When any disk status is not OK</div>
+											</td>
+											<td class="py-4 px-4 text-center">
+												<input
+													type="checkbox"
+													bind:checked={settings.notifications.events.disk_status_not_ok.enabled}
+													class="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+												/>
+											</td>
+											<td class="py-4 px-4">
+												<select
+													bind:value={settings.notifications.events.disk_status_not_ok.frequency}
+													class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+												>
+													<option value="default">Default</option>
+													<option value="once">Once</option>
+													<option value="15m">Every 15 min</option>
+													<option value="30m">Every 30 min</option>
+													<option value="1h">Every 1 hour</option>
+													<option value="3h">Every 3 hours</option>
+													<option value="6h">Every 6 hours</option>
+													<option value="12h">Every 12 hours</option>
+													<option value="24h">Every 24 hours</option>
+												</select>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
 						</div>
 
 						<!-- Email Service -->

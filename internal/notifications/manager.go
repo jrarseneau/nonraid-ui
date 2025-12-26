@@ -109,9 +109,17 @@ func (m *Manager) checkAndNotify() {
 	m.checkDiskStatus(status, cfg)
 }
 
+// getEffectiveFrequency resolves "default" frequency to the actual default frequency
+func (m *Manager) getEffectiveFrequency(eventFrequency string, defaultFrequency string) string {
+	if eventFrequency == "default" {
+		return defaultFrequency
+	}
+	return eventFrequency
+}
+
 // checkArrayHealth checks if array is healthy
 func (m *Manager) checkArrayHealth(status *nmdctl.Status, cfg settings.Settings) {
-	if !cfg.Notifications.Events.ArrayHealth {
+	if !cfg.Notifications.Events.ArrayHealth.Enabled {
 		return
 	}
 
@@ -119,9 +127,10 @@ func (m *Manager) checkArrayHealth(status *nmdctl.Status, cfg settings.Settings)
 	if status.Array.Health.Status != "HEALTHY" {
 		eventType := "array_health"
 		resource := "array"
+		frequency := m.getEffectiveFrequency(cfg.Notifications.Events.ArrayHealth.Frequency, cfg.Notifications.DefaultFrequency)
 
 		// Check if we should notify
-		if !m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
+		if !m.state.ShouldNotify(eventType, resource, frequency) {
 			return
 		}
 
@@ -157,23 +166,25 @@ func (m *Manager) checkDiskUsage(status *nmdctl.Status, cfg settings.Settings) {
 		fmt.Sscanf(disk.Filesystem.Usage, "%d%%", &usagePct)
 
 		// Check critical threshold
-		if cfg.Notifications.Events.DiskCritical && usagePct >= cfg.Thresholds.CriticalPct {
+		if cfg.Notifications.Events.DiskCritical.Enabled && usagePct >= cfg.Thresholds.CriticalPct {
 			eventType := "disk_critical"
 			resource := disk.DiskID
+			frequency := m.getEffectiveFrequency(cfg.Notifications.Events.DiskCritical.Frequency, cfg.Notifications.DefaultFrequency)
 
-			if m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
+			if m.state.ShouldNotify(eventType, resource, frequency) {
 				title := "🚨 Disk Critical Alert"
 				description := fmt.Sprintf("Disk **%s** (slot %d) has reached **%d%%** usage (critical threshold: %d%%)",
 					disk.DiskID, disk.Slot, usagePct, cfg.Thresholds.CriticalPct)
 				m.sendNotification(title, description, ColorRed, cfg)
 				m.state.MarkSent(eventType, resource)
 			}
-		} else if cfg.Notifications.Events.DiskWarning && usagePct >= cfg.Thresholds.WarningPct {
+		} else if cfg.Notifications.Events.DiskWarning.Enabled && usagePct >= cfg.Thresholds.WarningPct {
 			// Check warning threshold (only if not critical)
 			eventType := "disk_warning"
 			resource := disk.DiskID
+			frequency := m.getEffectiveFrequency(cfg.Notifications.Events.DiskWarning.Frequency, cfg.Notifications.DefaultFrequency)
 
-			if m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
+			if m.state.ShouldNotify(eventType, resource, frequency) {
 				title := "⚠️ Disk Warning Alert"
 				description := fmt.Sprintf("Disk **%s** (slot %d) has reached **%d%%** usage (warning threshold: %d%%)",
 					disk.DiskID, disk.Slot, usagePct, cfg.Thresholds.WarningPct)
@@ -199,23 +210,25 @@ func (m *Manager) checkDiskTemperature(status *nmdctl.Status, cfg settings.Setti
 		temp := *disk.Temperature
 
 		// Check critical threshold
-		if cfg.Notifications.Events.DiskTempCritical && temp >= cfg.Thresholds.TempCriticalC {
+		if cfg.Notifications.Events.DiskTempCritical.Enabled && temp >= cfg.Thresholds.TempCriticalC {
 			eventType := "disk_temp_critical"
 			resource := disk.DiskID
+			frequency := m.getEffectiveFrequency(cfg.Notifications.Events.DiskTempCritical.Frequency, cfg.Notifications.DefaultFrequency)
 
-			if m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
+			if m.state.ShouldNotify(eventType, resource, frequency) {
 				title := "🚨 Disk Temperature Critical Alert"
 				description := fmt.Sprintf("Disk **%s** (slot %d) has reached **%d°C** (critical threshold: %d°C)",
 					disk.DiskID, disk.Slot, temp, cfg.Thresholds.TempCriticalC)
 				m.sendNotification(title, description, ColorRed, cfg)
 				m.state.MarkSent(eventType, resource)
 			}
-		} else if cfg.Notifications.Events.DiskTempWarning && temp >= cfg.Thresholds.TempWarningC {
+		} else if cfg.Notifications.Events.DiskTempWarning.Enabled && temp >= cfg.Thresholds.TempWarningC {
 			// Check warning threshold (only if not critical)
 			eventType := "disk_temp_warning"
 			resource := disk.DiskID
+			frequency := m.getEffectiveFrequency(cfg.Notifications.Events.DiskTempWarning.Frequency, cfg.Notifications.DefaultFrequency)
 
-			if m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
+			if m.state.ShouldNotify(eventType, resource, frequency) {
 				title := "⚠️ Disk Temperature Warning Alert"
 				description := fmt.Sprintf("Disk **%s** (slot %d) has reached **%d°C** (warning threshold: %d°C)",
 					disk.DiskID, disk.Slot, temp, cfg.Thresholds.TempWarningC)
@@ -232,7 +245,7 @@ func (m *Manager) checkDiskTemperature(status *nmdctl.Status, cfg settings.Setti
 
 // checkDiskStatus checks if any disk status is not OK
 func (m *Manager) checkDiskStatus(status *nmdctl.Status, cfg settings.Settings) {
-	if !cfg.Notifications.Events.DiskStatusNotOK {
+	if !cfg.Notifications.Events.DiskStatusNotOK.Enabled {
 		return
 	}
 
@@ -240,8 +253,9 @@ func (m *Manager) checkDiskStatus(status *nmdctl.Status, cfg settings.Settings) 
 		if disk.Status != "DISK_OK" {
 			eventType := "disk_status"
 			resource := disk.DiskID
+			frequency := m.getEffectiveFrequency(cfg.Notifications.Events.DiskStatusNotOK.Frequency, cfg.Notifications.DefaultFrequency)
 
-			if m.state.ShouldNotify(eventType, resource, cfg.Notifications.Frequency) {
+			if m.state.ShouldNotify(eventType, resource, frequency) {
 				title := "⚠️ Disk Status Alert"
 				description := fmt.Sprintf("Disk **%s** (slot %d) status is **%s** (not DISK_OK)",
 					disk.DiskID, disk.Slot, disk.Status)
