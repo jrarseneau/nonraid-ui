@@ -242,15 +242,6 @@ func (s *Server) handleUpdateSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Encode the email password if it's provided and not already encoded
-	if newSettings.Notifications.Email.PasswordEncoded != "" {
-		// Check if it's already base64 encoded by trying to decode it
-		if _, err := notifications.DecodePassword(newSettings.Notifications.Email.PasswordEncoded); err != nil {
-			// Not valid base64, so encode it
-			newSettings.Notifications.Email.PasswordEncoded = notifications.EncodePassword(newSettings.Notifications.Email.PasswordEncoded)
-		}
-	}
-
 	// Update and save settings
 	if err := s.settings.Update(newSettings); err != nil {
 		log.Printf("Error saving settings: %v", err)

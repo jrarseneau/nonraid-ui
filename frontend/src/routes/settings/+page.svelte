@@ -118,7 +118,7 @@
 	}
 
 	async function testEmail() {
-		if (!settings.notifications.email.password_encoded) {
+		if (!settings.notifications.email.password) {
 			testEmailMessage = 'Please enter your email password in the configuration above';
 			return;
 		}
@@ -134,7 +134,7 @@
 				},
 				body: JSON.stringify({
 					config: settings.notifications.email,
-					password: settings.notifications.email.password_encoded
+					password: settings.notifications.email.password
 				})
 			});
 
@@ -514,7 +514,7 @@
 										</label>
 										<input
 											type="password"
-											bind:value={settings.notifications.email.password_encoded}
+											bind:value={settings.notifications.email.password}
 											placeholder="Enter password"
 											class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
 										/>

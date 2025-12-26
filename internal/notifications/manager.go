@@ -202,7 +202,7 @@ func (m *Manager) sendNotification(title, description string, color int, cfg set
 			cfg.Notifications.Email.SMTPServer,
 			cfg.Notifications.Email.SMTPPort,
 			cfg.Notifications.Email.Username,
-			cfg.Notifications.Email.PasswordEncoded,
+			cfg.Notifications.Email.Password,
 			cfg.Notifications.Email.FromAddress,
 		)
 
