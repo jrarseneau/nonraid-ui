@@ -241,7 +241,7 @@
 										style="width: {getUsagePercent(disk)}%"
 									></div>
 									<div class="absolute inset-0 flex items-center justify-center">
-										<span class="text-xs font-semibold text-white drop-shadow-md">
+										<span class="text-xs font-semibold text-gray-900 dark:text-white drop-shadow-sm">
 											{formatBytesDetailed(getUsedSpace(disk))}
 										</span>
 									</div>
@@ -259,7 +259,7 @@
 										style="width: {100 - getUsagePercent(disk)}%"
 									></div>
 									<div class="absolute inset-0 flex items-center justify-center">
-										<span class="text-xs font-semibold text-white drop-shadow-md">
+										<span class="text-xs font-semibold text-gray-900 dark:text-white drop-shadow-sm">
 											{formatBytesDetailed(getFreeSpace(disk))}
 										</span>
 									</div>
@@ -268,7 +268,7 @@
 								<div class="relative w-32 h-7 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
 									<div class="absolute inset-0 bg-green-500 dark:bg-green-600"></div>
 									<div class="absolute inset-0 flex items-center justify-center">
-										<span class="text-xs font-semibold text-white drop-shadow-md">
+										<span class="text-xs font-semibold text-gray-900 dark:text-white drop-shadow-sm">
 											{formatBytesDetailed(disk.size_gb)}
 										</span>
 									</div>
