@@ -3,6 +3,9 @@
 	import '../app.css';
 	import { settingsStore } from '$lib/stores/settings';
 
+	// Get commit hash from build-time define
+	const commitHash = __COMMIT_HASH__;
+
 	// Load settings on mount
 	onMount(() => {
 		settingsStore.load();
@@ -41,8 +44,12 @@
 	<footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 			<p class="text-center text-sm text-gray-500 dark:text-gray-400">
-				Powered by <a href="https://github.com/qvr/nonraid" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">nonraid</a>.
-				Built by Claude/Jean-Ray Arseneau - <a href="https://github.com/jrarseneau/nonraid-ui" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">view source</a>
+				Powered by <a href="https://github.com/qvr/nonraid" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">nonraid</a>.
+				Designed by Jean-Ray Arseneau, built by <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">Claude</a>.
+				<span class="mx-2">|</span>
+				<a href="https://github.com/jrarseneau/nonraid-ui/commit/{commitHash}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline font-mono">#{commitHash}</a>
+				<span class="mx-1">|</span>
+				<a href="https://github.com/jrarseneau/nonraid-ui" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">GitHub</a>
 			</p>
 		</div>
 	</footer>

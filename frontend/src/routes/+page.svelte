@@ -34,9 +34,6 @@
 			clearInterval(refreshInterval);
 		}
 	});
-
-	let lastUpdate = new Date();
-	$: if (status) lastUpdate = new Date();
 </script>
 
 <svelte:head>
@@ -78,20 +75,15 @@
 	{:else if status}
 		<div class="flex items-center justify-between">
 			<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Dashboard</h2>
-			<div class="flex items-center space-x-4">
-				<span class="text-sm text-gray-500 dark:text-gray-400">
-					Last updated: {lastUpdate.toLocaleTimeString()}
-				</span>
-				<button
-					on:click={loadStatus}
-					class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-				>
-					<svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-					</svg>
-					Refresh
-				</button>
-			</div>
+			<button
+				on:click={loadStatus}
+				class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+			>
+				<svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+				</svg>
+				Refresh
+			</button>
 		</div>
 
 		<ArrayStatus array={status.array} disks={status.disks} />
