@@ -8,23 +8,26 @@ import (
 
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
 	"github.com/jrarseneau/nonraid-ui/internal/settings"
+	"github.com/jrarseneau/nonraid-ui/internal/smartctl"
 )
 
 // Manager handles notification polling and dispatch
 type Manager struct {
-	client   *nmdctl.Client
-	settings *settings.Manager
-	state    *State
-	stopChan chan struct{}
+	client     *nmdctl.Client
+	settings   *settings.Manager
+	smartCache *smartctl.Cache
+	state      *State
+	stopChan   chan struct{}
 }
 
 // NewManager creates a new notification manager
-func NewManager(client *nmdctl.Client, settingsMgr *settings.Manager) *Manager {
+func NewManager(client *nmdctl.Client, settingsMgr *settings.Manager, smartCache *smartctl.Cache) *Manager {
 	return &Manager{
-		client:   client,
-		settings: settingsMgr,
-		state:    NewState(""),
-		stopChan: make(chan struct{}),
+		client:     client,
+		settings:   settingsMgr,
+		smartCache: smartCache,
+		state:      NewState(""),
+		stopChan:   make(chan struct{}),
 	}
 }
 
@@ -89,6 +92,14 @@ func (m *Manager) checkAndNotify() {
 	if err != nil {
 		log.Printf("Failed to get status for notifications: %v", err)
 		return
+	}
+
+	// Enrich status with SMART temperature data (same as API handler does)
+	for i := range status.Disks {
+		if status.Disks[i].Device != "" {
+			temp := m.smartCache.GetTemperature(status.Disks[i].Device)
+			status.Disks[i].Temperature = temp
+		}
 	}
 
 	// Check for events

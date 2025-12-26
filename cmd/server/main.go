@@ -36,17 +36,17 @@ func main() {
 	}
 	log.Printf("Settings loaded from: %s", settings.DefaultSettingsPath)
 
-	// Create and start notification manager
-	notifMgr := notifications.NewManager(client, settingsMgr)
-	if err := notifMgr.Start(); err != nil {
-		log.Fatalf("Failed to start notification manager: %v", err)
-	}
-	defer notifMgr.Stop()
-
 	// Create and start SMART cache (polls every 30 seconds)
 	smartCache := smartctl.NewCache(client, 30*time.Second)
 	smartCache.Start()
 	defer smartCache.Stop()
+
+	// Create and start notification manager (needs smartCache for temperature data)
+	notifMgr := notifications.NewManager(client, settingsMgr, smartCache)
+	if err := notifMgr.Start(); err != nil {
+		log.Fatalf("Failed to start notification manager: %v", err)
+	}
+	defer notifMgr.Stop()
 
 	// Create API server
 	server := api.NewServer(client, settingsMgr, notifMgr, smartCache)
