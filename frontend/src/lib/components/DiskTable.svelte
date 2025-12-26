@@ -50,6 +50,20 @@
 		}
 	}
 
+	// Get temperature text color based on temperature thresholds
+	function getTemperatureColor(temperature: number | null | undefined): string {
+		if (temperature === null || temperature === undefined) {
+			return 'text-gray-900 dark:text-white';
+		}
+		if (temperature >= thresholds.temp_critical_c) {
+			return 'text-red-600 dark:text-red-400';
+		} else if (temperature >= thresholds.temp_warning_c) {
+			return 'text-yellow-600 dark:text-yellow-400';
+		} else {
+			return 'text-gray-900 dark:text-white';
+		}
+	}
+
 	// Separate parity and data disks
 	$: parityDisks = disks.filter(d => d.type === 'P' || d.type === 'Q').sort((a, b) => {
 		if (a.type === 'P') return -1;
@@ -135,7 +149,7 @@
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
 							{#if disk.temperature !== undefined && disk.temperature !== null}
-								<div class="text-sm text-gray-900 dark:text-white">
+								<div class="text-sm font-medium {getTemperatureColor(disk.temperature)}">
 									{disk.temperature}°C
 								</div>
 							{:else}
@@ -209,7 +223,7 @@
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap">
 							{#if disk.temperature !== undefined && disk.temperature !== null}
-								<div class="text-sm text-gray-900 dark:text-white">
+								<div class="text-sm font-medium {getTemperatureColor(disk.temperature)}">
 									{disk.temperature}°C
 								</div>
 							{:else}

@@ -65,17 +65,31 @@
 	}
 
 	async function saveSettings() {
-		// Validate thresholds
+		// Validate usage thresholds
 		if (settings.thresholds.warning_pct < 0 || settings.thresholds.warning_pct > 100) {
-			error = 'Warning threshold must be between 0 and 100';
+			error = 'Disk usage warning threshold must be between 0 and 100';
 			return;
 		}
 		if (settings.thresholds.critical_pct < 0 || settings.thresholds.critical_pct > 100) {
-			error = 'Critical threshold must be between 0 and 100';
+			error = 'Disk usage critical threshold must be between 0 and 100';
 			return;
 		}
 		if (settings.thresholds.warning_pct >= settings.thresholds.critical_pct) {
-			error = 'Warning threshold must be less than critical threshold';
+			error = 'Disk usage warning threshold must be less than critical threshold';
+			return;
+		}
+
+		// Validate temperature thresholds
+		if (settings.thresholds.temp_warning_c < 0 || settings.thresholds.temp_warning_c > 100) {
+			error = 'Temperature warning threshold must be between 0 and 100°C';
+			return;
+		}
+		if (settings.thresholds.temp_critical_c < 0 || settings.thresholds.temp_critical_c > 100) {
+			error = 'Temperature critical threshold must be between 0 and 100°C';
+			return;
+		}
+		if (settings.thresholds.temp_warning_c >= settings.thresholds.temp_critical_c) {
+			error = 'Temperature warning threshold must be less than critical threshold';
 			return;
 		}
 
@@ -284,80 +298,121 @@
 					<!-- Thresholds Section -->
 					<div class="p-6 border-b border-gray-200 dark:border-gray-700">
 					<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-						Disk Usage Thresholds
+						Thresholds
 					</h2>
-					<p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-						Configure when disk usage gauges change color based on capacity
+					<p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+						Configure when disk metrics trigger color warnings and optional notifications.
 					</p>
 
-					<div class="space-y-4">
-						<div>
-							<label for="warning" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-								Warning Threshold (%)
-							</label>
-							<div class="flex items-center space-x-3">
-								<input
-									id="warning"
-									type="number"
-									min="0"
-									max="100"
-									bind:value={settings.thresholds.warning_pct}
-									class="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-								/>
-								<span class="text-sm text-gray-600 dark:text-gray-400">
-									Gauges turn yellow at this usage level
-								</span>
-							</div>
-						</div>
+					<!-- Thresholds Table -->
+					<div class="overflow-x-auto mb-6">
+						<table class="w-full border-collapse">
+							<thead>
+								<tr class="border-b-2 border-gray-300 dark:border-gray-600">
+									<th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+										Metric
+									</th>
+									<th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+										Warning
+									</th>
+									<th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+										Critical
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- Disk Usage Row -->
+								<tr class="border-b border-gray-200 dark:border-gray-700">
+									<td class="py-4 px-4 text-sm text-gray-900 dark:text-white font-medium">
+										Disk Usage
+									</td>
+									<td class="py-4 px-4">
+										<div class="flex items-center space-x-2">
+											<input
+												type="number"
+												min="0"
+												max="100"
+												bind:value={settings.thresholds.warning_pct}
+												class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+											/>
+											<span class="text-sm text-gray-600 dark:text-gray-400">%</span>
+										</div>
+									</td>
+									<td class="py-4 px-4">
+										<div class="flex items-center space-x-2">
+											<input
+												type="number"
+												min="0"
+												max="100"
+												bind:value={settings.thresholds.critical_pct}
+												class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+											/>
+											<span class="text-sm text-gray-600 dark:text-gray-400">%</span>
+										</div>
+									</td>
+								</tr>
+								<!-- Disk Temperature Row -->
+								<tr class="border-b border-gray-200 dark:border-gray-700">
+									<td class="py-4 px-4 text-sm text-gray-900 dark:text-white font-medium">
+										Disk Temperature
+									</td>
+									<td class="py-4 px-4">
+										<div class="flex items-center space-x-2">
+											<input
+												type="number"
+												min="0"
+												max="100"
+												bind:value={settings.thresholds.temp_warning_c}
+												class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+											/>
+											<span class="text-sm text-gray-600 dark:text-gray-400">°C</span>
+										</div>
+									</td>
+									<td class="py-4 px-4">
+										<div class="flex items-center space-x-2">
+											<input
+												type="number"
+												min="0"
+												max="100"
+												bind:value={settings.thresholds.temp_critical_c}
+												class="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+											/>
+											<span class="text-sm text-gray-600 dark:text-gray-400">°C</span>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 
-						<div>
-							<label for="critical" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-								Critical Threshold (%)
-							</label>
-							<div class="flex items-center space-x-3">
-								<input
-									id="critical"
-									type="number"
-									min="0"
-									max="100"
-									bind:value={settings.thresholds.critical_pct}
-									class="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-								/>
-								<span class="text-sm text-gray-600 dark:text-gray-400">
-									Gauges turn red at this usage level
-								</span>
-							</div>
+					<!-- Color Preview -->
+					<div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+						<div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+							Color Preview:
 						</div>
-
-						<!-- Visual preview -->
-						<div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-							<div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-								Color Preview:
+						<div class="flex space-x-4">
+							<div class="flex-1">
+								<div class="text-xs text-gray-600 dark:text-gray-400 mb-1 text-center">
+									Normal
+								</div>
+								<div class="h-7 bg-green-500 dark:bg-green-600 rounded flex items-center justify-center">
+									<span class="text-xs font-semibold text-white">Green</span>
+								</div>
 							</div>
-							<div class="flex space-x-4">
-								<div class="flex-1">
-									<div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-										Normal (&lt;{settings.thresholds.warning_pct}%)
-									</div>
-									<div class="h-7 bg-green-500 dark:bg-green-600 rounded flex items-center justify-center">
-										<span class="text-xs font-semibold text-white">Green</span>
-									</div>
+							<div class="flex-1">
+								<div class="text-xs text-gray-600 dark:text-gray-400 mb-1 text-center">
+									Warning
 								</div>
-								<div class="flex-1">
-									<div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-										Warning ({settings.thresholds.warning_pct}-{settings.thresholds.critical_pct - 1}%)
-									</div>
-									<div class="h-7 bg-yellow-500 dark:bg-yellow-600 rounded flex items-center justify-center">
-										<span class="text-xs font-semibold text-white">Yellow</span>
-									</div>
+								<div class="h-7 bg-yellow-500 dark:bg-yellow-600 rounded flex items-center justify-center">
+									<span class="text-xs font-semibold text-white">Yellow</span>
 								</div>
-								<div class="flex-1">
-									<div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-										Critical (≥{settings.thresholds.critical_pct}%)
-									</div>
-									<div class="h-7 bg-red-500 dark:bg-red-600 rounded flex items-center justify-center">
-										<span class="text-xs font-semibold text-white">Red</span>
-									</div>
+							</div>
+							<div class="flex-1">
+								<div class="text-xs text-gray-600 dark:text-gray-400 mb-1 text-center">
+									Critical
+								</div>
+								<div class="h-7 bg-red-500 dark:bg-red-600 rounded flex items-center justify-center">
+									<span class="text-xs font-semibold text-white">Red</span>
 								</div>
 							</div>
 						</div>

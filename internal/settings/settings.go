@@ -9,10 +9,12 @@ import (
 )
 
 const (
-	DefaultSettingsPath = "/var/lib/nonraid-ui/settings.json"
-	DefaultAppearance   = "auto"
-	DefaultWarningPct   = 95
-	DefaultCriticalPct  = 98
+	DefaultSettingsPath       = "/var/lib/nonraid-ui/settings.json"
+	DefaultAppearance         = "auto"
+	DefaultWarningPct         = 95
+	DefaultCriticalPct        = 98
+	DefaultTempWarningC       = 45
+	DefaultTempCriticalC      = 55
 )
 
 // Settings represents the application configuration
@@ -22,10 +24,12 @@ type Settings struct {
 	Notifications Notifications `json:"notifications"`
 }
 
-// Thresholds defines disk usage warning levels
+// Thresholds defines disk usage and temperature warning levels
 type Thresholds struct {
-	WarningPct  int `json:"warning_pct"`  // Warning threshold percentage (e.g., 95)
-	CriticalPct int `json:"critical_pct"` // Critical threshold percentage (e.g., 98)
+	WarningPct      int `json:"warning_pct"`       // Disk usage warning threshold percentage (e.g., 95)
+	CriticalPct     int `json:"critical_pct"`      // Disk usage critical threshold percentage (e.g., 98)
+	TempWarningC    int `json:"temp_warning_c"`    // Temperature warning threshold in Celsius (e.g., 45)
+	TempCriticalC   int `json:"temp_critical_c"`   // Temperature critical threshold in Celsius (e.g., 55)
 }
 
 // Notifications defines notification settings
@@ -85,8 +89,10 @@ func GetDefaults() Settings {
 	return Settings{
 		Appearance: DefaultAppearance,
 		Thresholds: Thresholds{
-			WarningPct:  DefaultWarningPct,
-			CriticalPct: DefaultCriticalPct,
+			WarningPct:    DefaultWarningPct,
+			CriticalPct:   DefaultCriticalPct,
+			TempWarningC:  DefaultTempWarningC,
+			TempCriticalC: DefaultTempCriticalC,
 		},
 		Notifications: Notifications{
 			Enabled:   false,
@@ -201,6 +207,20 @@ func (m *Manager) validateAndFixUnsafe() {
 	if m.settings.Thresholds.WarningPct >= m.settings.Thresholds.CriticalPct {
 		m.settings.Thresholds.WarningPct = DefaultWarningPct
 		m.settings.Thresholds.CriticalPct = DefaultCriticalPct
+	}
+
+	// Validate temperature thresholds (reasonable range: 0-100°C)
+	if m.settings.Thresholds.TempWarningC < 0 || m.settings.Thresholds.TempWarningC > 100 {
+		m.settings.Thresholds.TempWarningC = DefaultTempWarningC
+	}
+	if m.settings.Thresholds.TempCriticalC < 0 || m.settings.Thresholds.TempCriticalC > 100 {
+		m.settings.Thresholds.TempCriticalC = DefaultTempCriticalC
+	}
+
+	// Ensure temp warning < temp critical
+	if m.settings.Thresholds.TempWarningC >= m.settings.Thresholds.TempCriticalC {
+		m.settings.Thresholds.TempWarningC = DefaultTempWarningC
+		m.settings.Thresholds.TempCriticalC = DefaultTempCriticalC
 	}
 
 	// Validate notification frequency

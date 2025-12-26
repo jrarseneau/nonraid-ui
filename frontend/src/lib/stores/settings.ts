@@ -6,6 +6,8 @@ export interface Settings {
 	thresholds: {
 		warning_pct: number;
 		critical_pct: number;
+		temp_warning_c: number;
+		temp_critical_c: number;
 	};
 	notifications: {
 		enabled: boolean;
@@ -36,7 +38,9 @@ const defaultSettings: Settings = {
 	appearance: 'auto',
 	thresholds: {
 		warning_pct: 95,
-		critical_pct: 98
+		critical_pct: 98,
+		temp_warning_c: 45,
+		temp_critical_c: 55
 	},
 	notifications: {
 		enabled: false,

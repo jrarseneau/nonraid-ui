@@ -74,6 +74,22 @@
 		return 'text-gray-900 dark:text-white';
 	}
 
+	// Get color class based on temperature and thresholds
+	function getTemperatureColor(temperature: number | null | undefined): string {
+		if (temperature === null || temperature === undefined) {
+			return 'text-gray-900 dark:text-white';
+		}
+		const warningThreshold = $settingsStore?.thresholds.temp_warning_c || 45;
+		const criticalThreshold = $settingsStore?.thresholds.temp_critical_c || 55;
+
+		if (temperature >= criticalThreshold) {
+			return 'text-red-600 dark:text-red-400';
+		} else if (temperature >= warningThreshold) {
+			return 'text-yellow-600 dark:text-yellow-400';
+		}
+		return 'text-gray-900 dark:text-white';
+	}
+
 	// Find previous and next disks for navigation
 	$: currentIndex = diskDetails?.all_disks.findIndex(d => d.slot === slot) ?? -1;
 	$: prevDisk = currentIndex > 0 && diskDetails ? diskDetails.all_disks[currentIndex - 1] : undefined;
@@ -214,7 +230,7 @@
 				<!-- Temperature -->
 				<div>
 					<div class="text-sm text-gray-500 dark:text-gray-400">Temperature</div>
-					<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+					<div class="mt-1 text-lg font-semibold {getTemperatureColor(diskDetails.disk.temperature)}">
 						{#if diskDetails.disk.temperature !== undefined && diskDetails.disk.temperature !== null}
 							{diskDetails.disk.temperature}°C
 						{:else}
@@ -420,7 +436,7 @@
 					{#if diskDetails.smart_data.temperature}
 						<div>
 							<div class="text-sm text-gray-500 dark:text-gray-400">Current Temperature</div>
-							<div class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+							<div class="mt-1 text-2xl font-bold {getTemperatureColor(diskDetails.smart_data.temperature.current)}">
 								{diskDetails.smart_data.temperature.current}°C
 							</div>
 						</div>
