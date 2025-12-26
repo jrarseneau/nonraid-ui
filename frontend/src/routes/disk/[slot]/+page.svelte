@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { fetchDiskDetails } from '$lib/api';
 	import { getDiskStatusColor, formatBytes, formatBytesDetailed } from '$lib/utils';
+	import { settingsStore } from '$lib/stores/settings';
 	import type { DiskDetails } from '$lib/types';
 
 	let diskDetails: DiskDetails | null = null;
@@ -58,6 +59,19 @@
 	function getUsagePercent(): number {
 		if (!diskDetails?.disk.filesystem?.usage) return 0;
 		return parseInt(diskDetails.disk.filesystem.usage);
+	}
+
+	// Get color class based on usage percentage and thresholds
+	function getUsageColor(usagePercent: number): string {
+		const warningThreshold = $settingsStore?.thresholds.warning_pct || 80;
+		const criticalThreshold = $settingsStore?.thresholds.critical_pct || 90;
+
+		if (usagePercent >= criticalThreshold) {
+			return 'text-red-600 dark:text-red-400';
+		} else if (usagePercent >= warningThreshold) {
+			return 'text-yellow-600 dark:text-yellow-400';
+		}
+		return 'text-gray-900 dark:text-white';
 	}
 
 	// Find previous and next disks for navigation
@@ -237,7 +251,7 @@
 					<!-- Usage -->
 					<div>
 						<div class="text-sm text-gray-500 dark:text-gray-400">Usage</div>
-						<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+						<div class="mt-1 text-lg font-semibold {getUsageColor(getUsagePercent())}">
 							{diskDetails.disk.filesystem.usage}
 						</div>
 					</div>
@@ -246,15 +260,15 @@
 					<div>
 						<div class="text-sm text-gray-500 dark:text-gray-400">Used Space</div>
 						<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-							{formatBytesDetailed(getUsedSpace())} GB
+							{formatBytesDetailed(getUsedSpace())}
 						</div>
 					</div>
 
 					<!-- Free Space -->
 					<div>
 						<div class="text-sm text-gray-500 dark:text-gray-400">Free Space</div>
-						<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-							{formatBytesDetailed(getFreeSpace())} GB
+						<div class="mt-1 text-lg font-semibold {getUsageColor(getUsagePercent())}">
+							{formatBytesDetailed(getFreeSpace())}
 						</div>
 					</div>
 				{/if}
