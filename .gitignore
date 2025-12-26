@@ -20,6 +20,7 @@ go.work
 /frontend/yarn.lock
 
 # Build artifacts
+/bin
 /dist
 /embed
 
