@@ -69,6 +69,13 @@ func (m *Manager) pollLoop() {
 
 // checkAndNotify checks for events and sends notifications
 func (m *Manager) checkAndNotify() {
+	// Add panic recovery to prevent crashing the polling loop
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("PANIC in notification check: %v", r)
+		}
+	}()
+
 	// Get current settings
 	cfg := m.settings.Get()
 
