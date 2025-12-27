@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/jrarseneau/nonraid-ui/internal/nmdctl"
@@ -48,6 +50,8 @@ func (s *Server) setupRoutes() {
 	api := s.router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/status", s.handleStatus).Methods("GET")
 	api.HandleFunc("/disk/{slot}", s.handleDiskDetails).Methods("GET")
+	api.HandleFunc("/disks/{diskid}/note", s.handleUpdateDiskNote).Methods("PUT")
+	api.HandleFunc("/disks/{diskid}/note", s.handleDeleteDiskNote).Methods("DELETE")
 	api.HandleFunc("/settings", s.handleGetSettings).Methods("GET")
 	api.HandleFunc("/settings", s.handleUpdateSettings).Methods("PUT")
 	api.HandleFunc("/notifications/test/email", s.handleTestEmail).Methods("POST")
@@ -95,11 +99,20 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Merge SMART temperature data into disk info
+	// Get current settings for disk notes
+	currentSettings := s.settings.Get()
+
+	// Merge SMART temperature data and notes into disk info
 	for i := range status.Disks {
 		if status.Disks[i].Device != "" {
 			temp := s.smartCache.GetTemperature(status.Disks[i].Device)
 			status.Disks[i].Temperature = temp
+		}
+
+		// Add note if exists
+		if diskNote, exists := currentSettings.DiskNotes[status.Disks[i].DiskID]; exists {
+			status.Disks[i].Note = &diskNote.Note
+			status.Disks[i].NoteUpdatedAt = &diskNote.UpdatedAt
 		}
 	}
 
@@ -156,6 +169,13 @@ func (s *Server) handleDiskDetails(w http.ResponseWriter, r *http.Request) {
 	if targetDisk.Device != "" {
 		temp := s.smartCache.GetTemperature(targetDisk.Device)
 		targetDisk.Temperature = temp
+	}
+
+	// Add note if exists
+	currentSettings := s.settings.Get()
+	if diskNote, exists := currentSettings.DiskNotes[targetDisk.DiskID]; exists {
+		targetDisk.Note = &diskNote.Note
+		targetDisk.NoteUpdatedAt = &diskNote.UpdatedAt
 	}
 
 	// Get full SMART data
@@ -308,4 +328,99 @@ func (s *Server) handleTestDiscord(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Test Discord notification sent successfully"})
+}
+
+func (s *Server) handleUpdateDiskNote(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	diskID := vars["diskid"]
+
+	if diskID == "" {
+		http.Error(w, "Disk ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Limit request body to 1MB
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	defer r.Body.Close()
+
+	// Parse request body
+	var req struct {
+		Note string `json:"note"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Trim whitespace
+	note := strings.TrimSpace(req.Note)
+
+	// Validate note length
+	if len(note) > 500 {
+		http.Error(w, "Note too long (max 500 characters)", http.StatusBadRequest)
+		return
+	}
+
+	// Get current settings
+	currentSettings := s.settings.Get()
+
+	// If note is empty, delete it
+	if note == "" {
+		delete(currentSettings.DiskNotes, diskID)
+	} else {
+		// Update or create note
+		currentSettings.DiskNotes[diskID] = settings.DiskNote{
+			Note:      note,
+			UpdatedAt: time.Now(),
+		}
+	}
+
+	// Save settings
+	if err := s.settings.Update(currentSettings); err != nil {
+		log.Printf("Error saving disk note: %v", err)
+		http.Error(w, "Failed to save note", http.StatusInternalServerError)
+		return
+	}
+
+	// Return the updated note
+	response := map[string]interface{}{
+		"disk_id": diskID,
+	}
+	if diskNote, exists := currentSettings.DiskNotes[diskID]; exists {
+		response["note"] = diskNote.Note
+		response["updated_at"] = diskNote.UpdatedAt
+	} else {
+		response["note"] = ""
+		response["updated_at"] = nil
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (s *Server) handleDeleteDiskNote(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	diskID := vars["diskid"]
+
+	if diskID == "" {
+		http.Error(w, "Disk ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get current settings
+	currentSettings := s.settings.Get()
+
+	// Delete the note
+	delete(currentSettings.DiskNotes, diskID)
+
+	// Save settings
+	if err := s.settings.Update(currentSettings); err != nil {
+		log.Printf("Error deleting disk note: %v", err)
+		http.Error(w, "Failed to delete note", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }

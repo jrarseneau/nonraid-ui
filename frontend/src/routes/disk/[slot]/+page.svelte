@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { fetchDiskDetails } from '$lib/api';
+	import { fetchDiskDetails, updateDiskNote } from '$lib/api';
 	import { getDiskStatusColor, formatBytes, formatBytesDetailed } from '$lib/utils';
 	import { settingsStore } from '$lib/stores/settings';
 	import type { DiskDetails } from '$lib/types';
@@ -9,6 +9,12 @@
 	let diskDetails: DiskDetails | null = null;
 	let error: string | null = null;
 	let loading = true;
+
+	// Note editing state
+	let editingNote = false;
+	let noteText = '';
+	let savingNote = false;
+	let noteError = '';
 
 	$: slot = parseInt($page.params.slot);
 
@@ -96,6 +102,47 @@
 	$: nextDisk = currentIndex >= 0 && diskDetails && currentIndex < diskDetails.all_disks.length - 1
 		? diskDetails.all_disks[currentIndex + 1]
 		: undefined;
+
+	// Note editing functions
+	function startEditingNote() {
+		noteText = diskDetails?.disk.note || '';
+		editingNote = true;
+		noteError = '';
+	}
+
+	function cancelEditingNote() {
+		editingNote = false;
+		noteText = '';
+		noteError = '';
+	}
+
+	async function saveNote() {
+		if (!diskDetails) return;
+
+		savingNote = true;
+		noteError = '';
+
+		try {
+			await updateDiskNote(diskDetails.disk.disk_id, noteText);
+			// Reload disk details to get updated note
+			await loadDiskDetails();
+			editingNote = false;
+			noteText = '';
+		} catch (e) {
+			noteError = e instanceof Error ? e.message : 'Failed to save note';
+		} finally {
+			savingNote = false;
+		}
+	}
+
+	// Handle keyboard shortcuts in edit mode
+	function handleNoteKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			cancelEditingNote();
+		} else if (e.key === 'Enter' && e.ctrlKey) {
+			saveNote();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -312,6 +359,74 @@
 						{diskDetails.disk.errors}
 					</div>
 				</div>
+			</div>
+		</div>
+
+		<!-- Notes Section -->
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+				<h3 class="text-lg font-bold text-gray-900 dark:text-white">Notes</h3>
+				{#if !editingNote}
+					<button
+						on:click={startEditingNote}
+						class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+						title="Edit note"
+					>
+						<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+						</svg>
+					</button>
+				{/if}
+			</div>
+			<div class="p-6">
+				{#if editingNote}
+					<div class="space-y-4">
+						<textarea
+							bind:value={noteText}
+							on:keydown={handleNoteKeydown}
+							placeholder="Add notes about this disk (e.g., purchase date, warranty info, replacement notes)"
+							rows="4"
+							maxlength="500"
+							class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 resize-none"
+							autofocus
+						/>
+						<div class="flex items-center justify-between">
+							<p class="text-xs text-gray-500 dark:text-gray-400">
+								{noteText.length}/500 characters
+								{#if noteText.length > 0}
+									· Press Ctrl+Enter to save, Esc to cancel
+								{/if}
+							</p>
+							<div class="flex gap-2">
+								<button
+									on:click={cancelEditingNote}
+									class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-md transition-colors"
+								>
+									Cancel
+								</button>
+								<button
+									on:click={saveNote}
+									disabled={savingNote}
+									class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-md transition-colors disabled:cursor-not-allowed"
+								>
+									{savingNote ? 'Saving...' : 'Save'}
+								</button>
+							</div>
+						</div>
+						{#if noteError}
+							<p class="text-sm text-red-600 dark:text-red-400">{noteError}</p>
+						{/if}
+					</div>
+				{:else}
+					<div class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+						{diskDetails.disk.note || 'No notes. Click edit to add notes about this disk.'}
+					</div>
+					{#if !diskDetails.disk.note}
+						<p class="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+							Add notes about purchase date, warranty expiration, replacement history, etc.
+						</p>
+					{/if}
+				{/if}
 			</div>
 		</div>
 

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 )
 
 const (
@@ -20,9 +21,10 @@ const (
 
 // Settings represents the application configuration
 type Settings struct {
-	Appearance    string        `json:"appearance"` // "light", "dark", or "auto"
-	Thresholds    Thresholds    `json:"thresholds"`
-	Notifications Notifications `json:"notifications"`
+	Appearance    string                `json:"appearance"` // "light", "dark", or "auto"
+	Thresholds    Thresholds            `json:"thresholds"`
+	Notifications Notifications         `json:"notifications"`
+	DiskNotes     map[string]DiskNote   `json:"disk_notes"` // Key: disk_id (serial number)
 }
 
 // Thresholds defines disk usage and temperature warning levels
@@ -75,6 +77,12 @@ type DiscordConfig struct {
 	WebhookURL string `json:"webhook_url"`
 }
 
+// DiskNote stores user notes and metadata for a disk
+type DiskNote struct {
+	Note      string    `json:"note"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 // Manager handles settings persistence
 type Manager struct {
 	filePath string
@@ -122,6 +130,7 @@ func GetDefaults() Settings {
 				Enabled: false,
 			},
 		},
+		DiskNotes: make(map[string]DiskNote),
 	}
 }
 
@@ -261,6 +270,11 @@ func (m *Manager) validateAndFixUnsafe() {
 	// Validate email port
 	if m.settings.Notifications.Email.SMTPPort < 1 || m.settings.Notifications.Email.SMTPPort > 65535 {
 		m.settings.Notifications.Email.SMTPPort = 587
+	}
+
+	// Initialize DiskNotes if nil (for existing users upgrading)
+	if m.settings.DiskNotes == nil {
+		m.settings.DiskNotes = make(map[string]DiskNote)
 	}
 }
 

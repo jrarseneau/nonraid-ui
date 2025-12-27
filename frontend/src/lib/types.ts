@@ -78,6 +78,8 @@ export interface Disk {
 	disk_name: string;
 	filesystem?: Filesystem;
 	temperature?: number; // Temperature in Celsius from SMART data
+	note?: string; // User note for this disk
+	note_updated_at?: string; // ISO 8601 timestamp
 }
 
 export interface Filesystem {
