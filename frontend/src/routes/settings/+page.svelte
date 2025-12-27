@@ -295,6 +295,35 @@
 					</div>
 				</div>
 
+					<!-- View Mode Section -->
+					<div class="p-6 border-b border-gray-200 dark:border-gray-700">
+						<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">View Mode</h2>
+					<div class="space-y-3">
+						<label class="flex items-center cursor-pointer">
+							<input
+								type="radio"
+								name="view_mode"
+								value="normal"
+								bind:group={settings.view_mode}
+								class="w-4 h-4 text-blue-600 focus:ring-blue-500"
+							/>
+							<span class="ml-3 text-gray-900 dark:text-white">
+								Normal
+							</span>
+						</label>
+						<label class="flex items-center cursor-pointer">
+							<input
+								type="radio"
+								name="view_mode"
+								value="condensed"
+								bind:group={settings.view_mode}
+								class="w-4 h-4 text-blue-600 focus:ring-blue-500"
+							/>
+							<span class="ml-3 text-gray-900 dark:text-white">Condensed</span>
+						</label>
+					</div>
+				</div>
+
 					<!-- Thresholds Section -->
 					<div class="p-6 border-b border-gray-200 dark:border-gray-700">
 					<h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">

@@ -16,6 +16,10 @@
 	let savingNote = false;
 	let noteError = '';
 
+	// View mode settings
+	$: viewMode = $settingsStore.view_mode;
+	$: isCondensed = viewMode === 'condensed';
+
 	$: slot = parseInt($page.params.slot);
 
 	async function loadDiskDetails() {
@@ -149,7 +153,7 @@
 	<title>Disk {slot} Details - nonraid UI</title>
 </svelte:head>
 
-<div class="space-y-6">
+<div class="{isCondensed ? 'space-y-3' : 'space-y-6'}">
 	{#if loading && !diskDetails}
 		<div class="flex items-center justify-center h-64">
 			<div class="text-center">
@@ -194,7 +198,7 @@
 					</svg>
 					Dashboard
 				</a>
-				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+				<h2 class="{isCondensed ? 'text-lg' : 'text-xl'} font-semibold text-gray-900 dark:text-white">
 					Disk {getDisplaySlot(diskDetails.disk.type, diskDetails.disk.slot)} Details
 				</h2>
 			</div>
@@ -204,9 +208,9 @@
 				{#if prevDisk}
 					<a
 						href="/disk/{prevDisk.slot}"
-						class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+						class="inline-flex items-center {isCondensed ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'} border border-gray-300 dark:border-gray-600 shadow-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
 					>
-						<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg class="{isCondensed ? 'w-3 h-3' : 'w-4 h-4'} mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
 						</svg>
 						Prev
@@ -215,10 +219,10 @@
 				{#if nextDisk}
 					<a
 						href="/disk/{nextDisk.slot}"
-						class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+						class="inline-flex items-center {isCondensed ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'} border border-gray-300 dark:border-gray-600 shadow-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
 					>
 						Next
-						<svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg class="{isCondensed ? 'w-3 h-3' : 'w-4 h-4'} ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
 						</svg>
 					</a>
@@ -228,45 +232,45 @@
 
 		<!-- Disk Overview Card -->
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-				<h3 class="text-lg font-bold text-gray-900 dark:text-white">Disk Overview</h3>
+			<div class="{isCondensed ? 'px-4 py-2' : 'px-6 py-4'} border-b border-gray-200 dark:border-gray-700">
+				<h3 class="{isCondensed ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white">Disk Overview</h3>
 			</div>
-			<div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			<div class="{isCondensed ? 'p-4 gap-4' : 'p-6 gap-6'} grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 				<!-- Slot -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Slot</div>
-					<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Slot</div>
+					<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white">
 						{getDisplaySlot(diskDetails.disk.type, diskDetails.disk.slot)}
 					</div>
 				</div>
 
 				<!-- Type -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Type</div>
-					<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Type</div>
+					<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white">
 						{diskDetails.disk.type === 'P' || diskDetails.disk.type === 'Q' ? 'Parity' : 'Data'}
 					</div>
 				</div>
 
 				<!-- Device -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Device</div>
-					<div class="mt-1 text-lg font-mono text-gray-900 dark:text-white">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Device</div>
+					<div class="mt-1 {isCondensed ? 'text-sm' : 'text-lg'} font-mono text-gray-900 dark:text-white">
 						{diskDetails.disk.device}
 					</div>
 				</div>
 
 				<!-- Disk ID -->
 				<div class="md:col-span-2 lg:col-span-3">
-					<div class="text-sm text-gray-500 dark:text-gray-400">Disk ID</div>
-					<div class="mt-1 text-sm font-mono text-gray-900 dark:text-white break-all">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Disk ID</div>
+					<div class="mt-1 {isCondensed ? 'text-xs' : 'text-sm'} font-mono text-gray-900 dark:text-white break-all">
 						{diskDetails.disk.disk_id}
 					</div>
 				</div>
 
 				<!-- Status -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Status</div>
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Status</div>
 					<div class="mt-1">
 						<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {getDiskStatusColor(diskDetails.disk.status)}">
 							{diskDetails.disk.status.replace('DISK_', '')}
@@ -276,8 +280,8 @@
 
 				<!-- Temperature -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Temperature</div>
-					<div class="mt-1 text-lg font-semibold {getTemperatureColor(diskDetails.disk.temperature)}">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Temperature</div>
+					<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold {getTemperatureColor(diskDetails.disk.temperature)}">
 						{#if diskDetails.disk.temperature !== undefined && diskDetails.disk.temperature !== null}
 							{diskDetails.disk.temperature}°C
 						{:else}
@@ -288,8 +292,8 @@
 
 				<!-- Size -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Total Size</div>
-					<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Total Size</div>
+					<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white">
 						{formatBytes(diskDetails.disk.size_gb)}
 					</div>
 				</div>
@@ -297,40 +301,40 @@
 				{#if diskDetails.disk.filesystem}
 					<!-- Filesystem -->
 					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Filesystem</div>
-						<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+						<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Filesystem</div>
+						<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white">
 							{diskDetails.disk.filesystem.type}
 						</div>
 					</div>
 
 					<!-- Mount Point -->
 					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Mount Point</div>
-						<div class="mt-1 text-lg font-mono text-gray-900 dark:text-white">
+						<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Mount Point</div>
+						<div class="mt-1 {isCondensed ? 'text-sm' : 'text-lg'} font-mono text-gray-900 dark:text-white">
 							{diskDetails.disk.filesystem.mountpoint}
 						</div>
 					</div>
 
 					<!-- Usage -->
 					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Usage</div>
-						<div class="mt-1 text-lg font-semibold {getUsageColor(getUsagePercent())}">
+						<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Usage</div>
+						<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold {getUsageColor(getUsagePercent())}">
 							{diskDetails.disk.filesystem.usage}
 						</div>
 					</div>
 
 					<!-- Used Space -->
 					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Used Space</div>
-						<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+						<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Used Space</div>
+						<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white">
 							{formatBytesDetailed(getUsedSpace())}
 						</div>
 					</div>
 
 					<!-- Free Space -->
 					<div>
-						<div class="text-sm text-gray-500 dark:text-gray-400">Free Space</div>
-						<div class="mt-1 text-lg font-semibold {getUsageColor(getUsagePercent())}">
+						<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Free Space</div>
+						<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold {getUsageColor(getUsagePercent())}">
 							{formatBytesDetailed(getFreeSpace())}
 						</div>
 					</div>
@@ -338,24 +342,24 @@
 
 				<!-- Reads -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Total Reads</div>
-					<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Total Reads</div>
+					<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white">
 						{diskDetails.disk.reads.toLocaleString()}
 					</div>
 				</div>
 
 				<!-- Writes -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Total Writes</div>
-					<div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Total Writes</div>
+					<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white">
 						{diskDetails.disk.writes.toLocaleString()}
 					</div>
 				</div>
 
 				<!-- Errors -->
 				<div>
-					<div class="text-sm text-gray-500 dark:text-gray-400">Errors</div>
-					<div class="mt-1 text-lg font-semibold {diskDetails.disk.errors > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}">
+					<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">Errors</div>
+					<div class="mt-1 {isCondensed ? 'text-base' : 'text-lg'} font-semibold {diskDetails.disk.errors > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}">
 						{diskDetails.disk.errors}
 					</div>
 				</div>
@@ -364,21 +368,21 @@
 
 		<!-- Notes Section -->
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-				<h3 class="text-lg font-bold text-gray-900 dark:text-white">Notes</h3>
+			<div class="{isCondensed ? 'px-4 py-2' : 'px-6 py-4'} border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+				<h3 class="{isCondensed ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white">Notes</h3>
 				{#if !editingNote}
 					<button
 						on:click={startEditingNote}
 						class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
 						title="Edit note"
 					>
-						<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg class="{isCondensed ? 'w-4 h-4' : 'w-5 h-5'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
 						</svg>
 					</button>
 				{/if}
 			</div>
-			<div class="p-6">
+			<div class="{isCondensed ? 'p-4' : 'p-6'}">
 				{#if editingNote}
 					<div class="space-y-4">
 						<textarea
@@ -434,10 +438,10 @@
 		{#if diskDetails.smart_data}
 			<!-- SMART Health Status -->
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-				<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-					<h3 class="text-lg font-bold text-gray-900 dark:text-white">SMART Health Status</h3>
+				<div class="{isCondensed ? 'px-4 py-2' : 'px-6 py-4'} border-b border-gray-200 dark:border-gray-700">
+					<h3 class="{isCondensed ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white">SMART Health Status</h3>
 				</div>
-				<div class="p-6">
+				<div class="{isCondensed ? 'p-4' : 'p-6'}">
 					<div class="flex items-center gap-4">
 						{#if diskDetails.smart_data.smart_status}
 							{#if diskDetails.smart_data.smart_status.passed}
@@ -464,10 +468,10 @@
 
 			<!-- Disk Hardware Information -->
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-				<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-					<h3 class="text-lg font-bold text-gray-900 dark:text-white">Disk Hardware Information</h3>
+				<div class="{isCondensed ? 'px-4 py-2' : 'px-6 py-4'} border-b border-gray-200 dark:border-gray-700">
+					<h3 class="{isCondensed ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white">Disk Hardware Information</h3>
 				</div>
-				<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div class="{isCondensed ? 'p-4 gap-4' : 'p-6 gap-6'} grid grid-cols-1 md:grid-cols-2">
 					{#if diskDetails.smart_data.model_family}
 						<div>
 							<div class="text-sm text-gray-500 dark:text-gray-400">Model Family</div>
@@ -525,10 +529,10 @@
 
 			<!-- Key Metrics -->
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-				<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-					<h3 class="text-lg font-bold text-gray-900 dark:text-white">Key Metrics</h3>
+				<div class="{isCondensed ? 'px-4 py-2' : 'px-6 py-4'} border-b border-gray-200 dark:border-gray-700">
+					<h3 class="{isCondensed ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white">Key Metrics</h3>
 				</div>
-				<div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+				<div class="{isCondensed ? 'p-4 gap-4' : 'p-6 gap-6'} grid grid-cols-1 md:grid-cols-3">
 					{#if diskDetails.smart_data.power_on_time}
 						<div>
 							<div class="text-sm text-gray-500 dark:text-gray-400">Power-On Hours</div>
@@ -562,14 +566,14 @@
 			<!-- SMART Attributes Table -->
 			{#if diskDetails.smart_data.ata_smart_attributes?.table}
 				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-					<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-						<h3 class="text-lg font-bold text-gray-900 dark:text-white">SMART Attributes</h3>
+					<div class="{isCondensed ? 'px-4 py-2' : 'px-6 py-4'} border-b border-gray-200 dark:border-gray-700">
+						<h3 class="{isCondensed ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white">SMART Attributes</h3>
 					</div>
 					<div class="overflow-x-auto">
 						<table class="w-full">
 							<thead class="bg-gray-50 dark:bg-gray-700/50">
 								<tr>
-									<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">ID</th>
+									<th class="{isCondensed ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-xs'} text-left font-medium text-gray-500 dark:text-gray-400 uppercase">ID</th>
 									<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Attribute Name</th>
 									<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Value</th>
 									<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Worst</th>

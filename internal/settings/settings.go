@@ -12,6 +12,7 @@ import (
 const (
 	DefaultSettingsPath       = "/var/lib/nonraid-ui/settings.json"
 	DefaultAppearance         = "auto"
+	DefaultViewMode           = "normal"
 	DefaultWarningPct         = 95
 	DefaultCriticalPct        = 98
 	DefaultTempWarningC       = 45
@@ -22,6 +23,7 @@ const (
 // Settings represents the application configuration
 type Settings struct {
 	Appearance    string                `json:"appearance"` // "light", "dark", or "auto"
+	ViewMode      string                `json:"view_mode"`  // "normal" or "condensed"
 	Thresholds    Thresholds            `json:"thresholds"`
 	Notifications Notifications         `json:"notifications"`
 	DiskNotes     map[string]DiskNote   `json:"disk_notes"` // Key: disk_id (serial number)
@@ -105,6 +107,7 @@ func NewManager(filePath string) *Manager {
 func GetDefaults() Settings {
 	return Settings{
 		Appearance: DefaultAppearance,
+		ViewMode:   DefaultViewMode,
 		Thresholds: Thresholds{
 			WarningPct:    DefaultWarningPct,
 			CriticalPct:   DefaultCriticalPct,
@@ -218,6 +221,11 @@ func (m *Manager) validateAndFixUnsafe() {
 	// Validate appearance
 	if m.settings.Appearance != "light" && m.settings.Appearance != "dark" && m.settings.Appearance != "auto" {
 		m.settings.Appearance = DefaultAppearance
+	}
+
+	// Validate view mode
+	if m.settings.ViewMode != "normal" && m.settings.ViewMode != "condensed" {
+		m.settings.ViewMode = DefaultViewMode
 	}
 
 	// Validate thresholds

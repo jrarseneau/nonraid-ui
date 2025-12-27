@@ -3,6 +3,7 @@ import { browser } from '$app/environment';
 
 export interface Settings {
 	appearance: 'light' | 'dark' | 'auto';
+	view_mode: 'normal' | 'condensed';
 	thresholds: {
 		warning_pct: number;
 		critical_pct: number;
@@ -56,6 +57,7 @@ export interface Settings {
 
 const defaultSettings: Settings = {
 	appearance: 'auto',
+	view_mode: 'normal',
 	thresholds: {
 		warning_pct: 95,
 		critical_pct: 98,

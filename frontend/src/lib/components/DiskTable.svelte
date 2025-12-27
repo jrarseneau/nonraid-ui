@@ -5,8 +5,10 @@
 
 	export let disks: Disk[];
 
-	// Subscribe to settings for thresholds
+	// Subscribe to settings for thresholds and view mode
 	$: thresholds = $settingsStore.thresholds;
+	$: viewMode = $settingsStore.view_mode;
+	$: isCondensed = viewMode === 'condensed';
 
 	// Helper to get display slot (P, Q, or slot number)
 	function getDisplaySlot(disk: Disk): string {
@@ -75,26 +77,27 @@
 </script>
 
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-	<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-		<h3 class="text-lg font-bold text-gray-900 dark:text-white">Disks</h3>
+	<div class="{isCondensed ? 'px-4 py-2' : 'px-6 py-4'} border-b border-gray-200 dark:border-gray-700">
+		<h3 class="{isCondensed ? 'text-base' : 'text-lg'} font-bold text-gray-900 dark:text-white">Disks</h3>
 	</div>
 
 	<div class="overflow-x-auto">
 		<table class="w-full">
 			<thead class="bg-gray-50 dark:bg-gray-700/50">
 				<tr>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+					<th class="{isCondensed ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-xs'} text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Slot
 					</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+					<th class="{isCondensed ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-xs'} text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Disk ID
 					</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+					<th class="{isCondensed ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-xs'} text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Status
 					</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-						Temperature
+					<th class="{isCondensed ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-xs'} text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+						Temp
 					</th>
+					{#if !isCondensed}
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Filesystem
 					</th>
@@ -107,33 +110,38 @@
 					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 						Free
 					</th>
+					{:else}
+					<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+						Size / Usage
+					</th>
+					{/if}
 				</tr>
 			</thead>
 			<tbody>
 				<!-- Parity Section -->
 				{#if parityDisks.length > 0}
 					<tr class="bg-gray-100 dark:bg-gray-700">
-						<td colspan="8" class="px-6 py-2">
-							<div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+						<td colspan="{isCondensed ? 5 : 8}" class="{isCondensed ? 'px-3 py-1' : 'px-6 py-2'}">
+							<div class="{isCondensed ? 'text-xs' : 'text-sm'} font-semibold text-gray-700 dark:text-gray-300">
 								Parity
 							</div>
 						</td>
 					</tr>
 					{#each parityDisks as disk}
 					<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors border-b border-gray-200 dark:border-gray-700">
-						<td class="px-6 py-4 whitespace-nowrap">
-							<div class="text-sm font-medium text-gray-900 dark:text-white">
+						<td class="{isCondensed ? 'px-3 py-2' : 'px-6 py-4'} whitespace-nowrap">
+							<div class="{isCondensed ? 'text-xs' : 'text-sm'} font-medium text-gray-900 dark:text-white">
 								{getDisplaySlot(disk)}
 							</div>
 						</td>
-						<td class="px-6 py-4">
+						<td class="{isCondensed ? 'px-3 py-2' : 'px-6 py-4'}">
 							<div class="flex items-center gap-2">
 								<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
 									{disk.disk_id}
 								</div>
 								{#if disk.note}
 									<div class="relative group">
-										<svg class="w-4 h-4 text-blue-500 dark:text-blue-400 cursor-help flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+										<svg class="{isCondensed ? 'w-3 h-3' : 'w-4 h-4'} text-blue-500 dark:text-blue-400 cursor-help flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
 											<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
 										</svg>
 										<!-- Popover -->
@@ -149,26 +157,27 @@
 									class="flex-shrink-0 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
 									title="View disk details"
 								>
-									<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<svg class="{isCondensed ? 'w-3 h-3' : 'w-4 h-4'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
 								</a>
 							</div>
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
+						<td class="{isCondensed ? 'px-3 py-2' : 'px-6 py-4'} whitespace-nowrap">
 							<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {getDiskStatusColor(disk.status)}">
 								{disk.status.replace('DISK_', '')}
 							</span>
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
+						<td class="{isCondensed ? 'px-3 py-2' : 'px-6 py-4'} whitespace-nowrap">
 							{#if disk.temperature !== undefined && disk.temperature !== null}
-								<div class="text-sm font-medium {getTemperatureColor(disk.temperature)}">
+								<div class="{isCondensed ? 'text-xs' : 'text-sm'} font-medium {getTemperatureColor(disk.temperature)}">
 									{disk.temperature}°C
 								</div>
 							{:else}
-								<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
+								<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">-</div>
 							{/if}
 						</td>
+						{#if !isCondensed}
 						<td class="px-6 py-4 whitespace-nowrap">
 							<div class="text-sm text-gray-900 dark:text-white">
 								{disk.filesystem?.type || '-'}
@@ -193,6 +202,14 @@
 						<td class="px-6 py-4 whitespace-nowrap">
 							<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
 						</td>
+						{:else}
+						<!-- Condensed: combine size/usage into one column -->
+						<td class="px-3 py-2 whitespace-nowrap">
+							<div class="text-xs text-gray-900 dark:text-white">
+								{formatBytes(disk.size_gb)}
+							</div>
+						</td>
+						{/if}
 					</tr>
 					{/each}
 				{/if}
@@ -200,27 +217,27 @@
 				<!-- Data Section -->
 				{#if dataDisks.length > 0}
 					<tr class="bg-gray-100 dark:bg-gray-700">
-						<td colspan="8" class="px-6 py-2">
-							<div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+						<td colspan="{isCondensed ? 5 : 8}" class="{isCondensed ? 'px-3 py-1' : 'px-6 py-2'}">
+							<div class="{isCondensed ? 'text-xs' : 'text-sm'} font-semibold text-gray-700 dark:text-gray-300">
 								Data
 							</div>
 						</td>
 					</tr>
 					{#each dataDisks as disk}
 					<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors border-b border-gray-200 dark:border-gray-700">
-						<td class="px-6 py-4 whitespace-nowrap">
-							<div class="text-sm font-medium text-gray-900 dark:text-white">
+						<td class="{isCondensed ? 'px-3 py-2' : 'px-6 py-4'} whitespace-nowrap">
+							<div class="{isCondensed ? 'text-xs' : 'text-sm'} font-medium text-gray-900 dark:text-white">
 								{getDisplaySlot(disk)}
 							</div>
 						</td>
-						<td class="px-6 py-4">
+						<td class="{isCondensed ? 'px-3 py-2' : 'px-6 py-4'}">
 							<div class="flex items-center gap-2">
 								<div class="text-xs text-gray-500 dark:text-gray-400 font-mono max-w-xs truncate" title={disk.disk_id}>
 									{disk.disk_id}
 								</div>
 								{#if disk.note}
 									<div class="relative group">
-										<svg class="w-4 h-4 text-blue-500 dark:text-blue-400 cursor-help flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+										<svg class="{isCondensed ? 'w-3 h-3' : 'w-4 h-4'} text-blue-500 dark:text-blue-400 cursor-help flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
 											<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
 										</svg>
 										<!-- Popover -->
@@ -236,26 +253,27 @@
 									class="flex-shrink-0 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
 									title="View disk details"
 								>
-									<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<svg class="{isCondensed ? 'w-3 h-3' : 'w-4 h-4'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
 								</a>
 							</div>
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
+						<td class="{isCondensed ? 'px-3 py-2' : 'px-6 py-4'} whitespace-nowrap">
 							<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {getDiskStatusColor(disk.status)}">
 								{disk.status.replace('DISK_', '')}
 							</span>
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
+						<td class="{isCondensed ? 'px-3 py-2' : 'px-6 py-4'} whitespace-nowrap">
 							{#if disk.temperature !== undefined && disk.temperature !== null}
-								<div class="text-sm font-medium {getTemperatureColor(disk.temperature)}">
+								<div class="{isCondensed ? 'text-xs' : 'text-sm'} font-medium {getTemperatureColor(disk.temperature)}">
 									{disk.temperature}°C
 								</div>
 							{:else}
-								<div class="text-sm text-gray-500 dark:text-gray-400">-</div>
+								<div class="{isCondensed ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400">-</div>
 							{/if}
 						</td>
+						{#if !isCondensed}
 						<td class="px-6 py-4 whitespace-nowrap">
 							<div class="text-sm text-gray-900 dark:text-white">
 								{disk.filesystem?.type || '-'}
@@ -315,6 +333,31 @@
 								</div>
 							{/if}
 						</td>
+						{:else}
+						<!-- Condensed: combine size/usage into one column -->
+						<td class="px-3 py-2 whitespace-nowrap">
+							{#if disk.filesystem?.usage}
+								<div class="text-xs text-gray-900 dark:text-white mb-1">
+									{formatBytes(disk.size_gb)}
+								</div>
+								<div class="relative w-24 h-5 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+									<div
+										class="absolute inset-0 {getGaugeColor(disk)} transition-all"
+										style="width: {getUsagePercent(disk)}%"
+									></div>
+									<div class="absolute inset-0 flex items-center justify-center">
+										<span class="text-xs font-semibold text-gray-900 dark:text-white drop-shadow-sm">
+											{getUsagePercent(disk)}%
+										</span>
+									</div>
+								</div>
+							{:else}
+								<div class="text-xs text-gray-900 dark:text-white">
+									{formatBytes(disk.size_gb)}
+								</div>
+							{/if}
+						</td>
+						{/if}
 					</tr>
 					{/each}
 				{/if}
